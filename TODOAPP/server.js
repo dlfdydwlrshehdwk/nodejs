@@ -1,9 +1,13 @@
-const express = require('express'); // 아까 설치한 라이브러리 첨부해주세요
-const app = express(); // 첨부한 라이브러리로 객체 만들기(사용법)
-app.use(express.urlencoded({extended: true})) 
+const express = require('express')
+app.use(express.urlencoded({ extended: true }));
+const app = express()
+const MongoClient = require('mongodb').MongoClient
 
-app.listen(8080, function(){ // .listen(서버띄울 포트번호, 띄운 후 실행할 코드)함수 쓰면 서버열수있다
-  console.log('listening on 8080');
+MongoClient.connect('mongodb+srv://admin:qwer1234@cluster0.gr6juzz.mongodb.net/?retryWrites=true&w=majority', function(에러, client){
+  if (에러) return console.log(에러)
+  app.listen(8080, function() {
+    console.log('listening on 8080')
+  })
 })
 
 // 누군가가 /pet 으로 방문을 하면 pet 관련된 안내문을 띄워주자
