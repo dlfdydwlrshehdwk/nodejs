@@ -33,13 +33,17 @@ npm install mongodb@5
 
 몽고디비 라이브러리 셋팅
 간단한설명 - 호스팅받은 몽고디비에 접속하고 접속결과를 db라는 변수에 저장한것
+
 const { MongoClient } = require('mongodb')
 
 let db
-const url = 'mongodb사이트에 있던 님들의 DB 접속 URL'
+const url = 'mongodb사이트에 있던 님들의 DB 접속 URL'  - 데이터베이스 - 커넥트 - 드라이브 - Add your connection string into your application code (닉네임과 패스워도도 기입하는거 잘기입하기)
 new MongoClient(url).connect().then((client)=>{
   console.log('DB연결성공')
-  db = client.db('forum')
+  db = client.db('db명')
 }).catch((err)=>{
   console.log(err)
 })
+
+// db에 데이터 저장하기
+db.collection('post').insertOne({이름 : 값})
