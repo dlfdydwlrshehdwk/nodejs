@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="kr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+<body>
+  <%- include('nav.ejs') %>
+
+  <form action="/add" method="POST">
+    <h3>글작성</h3>
+    <input name="title" type="text" placeholder="제목">
+    <input name="content" type="text" placeholder="내용">
+    <button type="submit">작성</button>
+  </form>
+</body>
+</html>

@@ -1,13 +1,16 @@
 <!DOCTYPE html>
-<html lang="kr">
+<html lang="ko">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Document</title>
 </head>
 <body>
-  <h1>
-    <%= 시간 %>
-  </h1>
+  <%- include('nav.ejs') %>
+  <%= JSON.stringify(result) %>
+  <div>
+    <h3><%= result.title %></h3>
+    <p><%= result.content %></p>
+  </div>
 </body>
 </html>
