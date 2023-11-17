@@ -28,15 +28,15 @@
 <%= "totalPage : " + totalPage %>
 <%= "num : " + num %>
 
-<!-- sort({ _id : -1}) -1은 내림차순 1은 오름차순 -->
-  <form action="/list" method="get">
-    <select onchange="this.form.submit()"  name="sort" id="">
+<!-- sort({ _id : -1}) -1은 내림차순 1은 오름차순  정렬못해먹겠다.-->
+  <!-- <form action="/list" method="get" onchange="this.form.submit()">
+    <select onchange="this.form.submit()" name="sort" id="">
       <option value="">정렬하기</option>
       <option value="namesoon">이름순</option>
       <option value="timesoon">시간순</option>
       <option value="goodsoon">추천순</option>
     </select>
-  </form>
+  </form> -->
   <ul>
     <% for(let i = 0; i < pageSize; i++){ %>
       <% if(num < 1) break %>
@@ -72,9 +72,24 @@
       <a href="javascript:alert('마지막페이지 입니다.')">&raquo;</a>
     <% }%>
   </div>
+
+  <div class="form-set">
+    <form action="/search" method="get" style="display: flex;">
+      <div class="inp-set slct-type" style="display: flex;">
+        <div class="slct">
+          <select name="search" id="">
+            <option value="">구분</option>
+            <option value="">글제목</option>
+            <option value="">글내용</option>
+          </select>
+        </div>
+        <input name="search" type="text">
+      </div>
+      <button type="submit">검색</button>
+    </form>
+  </div>
   <script>
-    let a = 3%4
-    console.log(a)
+    
   </script>
 </body>
 </html>

@@ -40,7 +40,6 @@ new MongoClient(url).connect().then((client)=>{
     console.log('8080')
   })
 
-
   // 라우팅
   app.get('/',(요청,응답) => { // 메인페이지 접속시
     // 응답.send('메인입니다.') // 단순 글씨만 보낼떄
@@ -56,40 +55,8 @@ new MongoClient(url).connect().then((client)=>{
       + 정렬기능 있어야겠지 (최신순, 좋아요가 많은순, 댓글이 많은순이라던지, )
     */
 
-    // 위의 코드는 db의 모든데이터를 가져오는 코드라 가독성이 안좋을 수 있음 그래서 개수제한을 둬서 짜르기로 ㄱㄱ
-    // limit과 skip은 변수화 해놓으면 유용할듯
     // let result = await db.collection('post').find().limit(5).toArray()
     let result = await db.collection('post').find().toArray()
-    // let result = await db.collection('post').find().toArray()
-    // result = await db.collection('post').find().skip(5).limit(5).toArray() // 앞에 5개는 제외하고 5개를뽑아오는 코드 - pagenation 할때 유용할듯함. .skip() 은 성능이 안좋다 너무 많은 갯수는 ㄴㄴ
-    // url파라미터값을 받아오면 검색페이지 같은거 할때 유용할듯함
-    // 예를들어 검색/숫자 같이 검색페이지 뒤에 숫자가 따라오는식이라면...
-    /* app.get('/list/:id', async (요청, 응답) => {
-      let result = await db.collection('post').find()
-        .skip( (요청.params.id - 1) * 5 ).limit(5).toArray() 
-      응답.render('list.ejs', { 글목록 : result })
-    })  */
-    
-    // 스킵을 안쓰고 방금게시물에서 다음페이지 바로가기 같은 기능은...
-    /* app.get('/list/:id', async (요청,응답) => {
-      let result = await db.collection('post').find({_id : {$gt : new ObjectId(요청.params.id)}}).limit(5).toArray()
-      응답.render('검색페이지.ejs',{ result : result})
-    }) */
-    // 이렇게 가능할듯하다. $gt는 _id가 방금본마지막게시물보다 큰거를 다 찾아옴  <- 여기서 5개제한을 걸어가져오는것 
-    // - 왜? - skip은 성능이 안좋으니까 다른방법으로 이게있단거(장점 :  빠름 - 아이디로 찾는게 되게빠르다고함, 단점 : 페이지이동은 불가능 - 이전, 다음 이런 화살표기능만 가능) 
-
-    // pagenation 한다면 pagenation에 숫자를 읽어오거나 배열의 순번을 이용해서 변수에 담아 사용가능할듯.
-    // 또는 글을 만들 때 id값을 정수로 부여하면 몇번째로 가거나 하는거 쉽게 구현가능 - 하지만 이 기능을 원하는 사람 흔치않음 - 필요한지는 스스로 고민해볼것
-    // 정수로 글번호를 부여하고 싶다면 auto increment를 해야함.
-    /* 일단 counter 라는 다른 이름의 컬렉션을 하나 만들고 
-    그 안에 { _id : 자동부여된거, count : 0  } 이런 document를 하나 발행해둡니다. 
-    그 다음에 게시물을 하나 발행할 때 마다 어떻게 하냐면 
-    1. counter 컬렉션에 있던 document 를 찾아와서 count : 에 기재된 값을 출력해봅니다. 
-    2. 그 값에 +1을 한 다음 그걸 _id란에 기입해서 새로운 글을 발행합니다. 그럼 { _id : 1, title : 어쩌구 } 이런게 발행되겠군요.
-    3. 성공적으로 발행된걸 확인하면 counter 컬렉션의 document에 있던 count : 항목을 +1 해줍니다. updateOne 쓰면 되겠군요. */ 
-    // 하지만 트리거 기능을 쓰는게 더정확하다고하며  https://www.mongodb.com/basics/mongodb-auto-increment - 영문이라 해석필요 모름 ..ㅠ
-    // 트리거는 db에 뭔가 변화가 일어날때 자동으로 실행되는 코드를 뜻한다고 함.
-    // 정렬기능은 objectid순으로 정렬가능하며 , 날짜는 날짜기록해서 날짜순정렬가능
     
     응답.render('list.ejs' , {글목록 : result, 글수 : result.length})
   })
@@ -101,20 +68,23 @@ new MongoClient(url).connect().then((client)=>{
       let limit = 5;
       let result = await db.collection('post').find().skip(skip).limit(limit).toArray();
       let data = await db.collection('post').find().toArray()
+      console.log(요청.body,요청.params)
       응답.render('list.ejs' , {글목록 : result , params : 요청.params.id, 글수 : data.length, 현재페이지 : nowPage})
     } catch {
       응답.status(500).send('오류')
     }
   })
-  
 
+  // app.post('/list/:id',async (요청,응답) => {
+  //   console.log(요청.body)
+  // })
+  
   // write 글쓰기 페이지 접속시 
   app.get('/write',(요청,응답) => {
     응답.render('write.ejs')
   })
   // add 글 추가하는 API
   app.post('/add', async (요청,응답) => {
-    // console.log(요청.body) // 유저가 보낸 데이터
     // 간혹 서버에 문제가 생길 수 있으니 try catch문으로 처리 try - 잘되면 , catch - 안됐을때
     try {
       // 예외처리 - 빈칸으로 전송한다던가 할때 ( 여러상황을 예외처리하는게 좋음 , js로 예외처리를 할 수 있으나 코드는 조작이 가능하니 최종은 서버에서 한다. )
@@ -167,6 +137,16 @@ new MongoClient(url).connect().then((client)=>{
 
     // 하지만 user에게서 받아오는 id값은 html에 있으면 임의 조작이 가능한데 이럴경우는 어떻게?
     응답.redirect('/list')
+  })
+  // search 검색페이지 접속시
+  app.get('/search', async (요청,응답) => {
+    try {
+      let result = 1
+      console.log(요청.body)
+      응답.render('search.ejs',{data : result})
+    } catch (e) {
+      응답.status(500).send(e)
+    }
   })
 
   // form태그에서 put이나 delete사용가능
