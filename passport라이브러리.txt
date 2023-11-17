@@ -1,0 +1,38 @@
+passport 라이브러리 - 로그인 기능을 쉽게 사용할 수 있게 해줌 OAuth, JWt, session 다 쉽게 가능
+
+인스톨 코드
+npm install express-session passport passport-local  - 3가지를 깔아줌
+passport - 회원인증을 도와주는 메인 라이브러리
+passport-local - 아이디/비번 방식으로 회원인증 하고 싶을 때
+express-session - 세션만드는 것을 도와주는 라이브러리 
+
+셋팅
+
+const session = require('express-session')
+const passport = require('passport')
+const LocalStrategy = require('passport-local')
+
+app.use(passport.initialize())
+app.use(session({
+  secret: '암호화에 쓸 비번',
+  resave : false, // 유저가 서버로 요청할때마다 세션 갱신할건지 default : false
+  saveUninitialized : false // 로그인 안해도 세션 만들것인지 default : false
+}))
+app.use(passport.session()) 
+
+
+사용법
+
+new Localstrategy 어쩌구가 아이디 / 비번이 db와 일치한지 검증하는 로직 짜는 공간
+실행하는방법은 API안에서 passport.authenticate('local')() 이런코드 작성하면 된다고 함 + 이 코드 하단에 API들을 만들어야 그 API들은 로그인관련 기능들이 잘 작동한다고 함
+passport.use(new LocalStrategy(async (입력한아이디, 입력한비번, cb) => {
+  let result = await db.collection('user').findOne({ username : 입력한아이디}) // 디비에 유저네임 있는지 확인
+  if (!result) { // 없으면...
+    return cb(null, false, { message: '아이디 DB에 없음' })
+  }
+  if (result.password == 입력한비번) { // 아이디있으면 비번이랑 비교
+    return cb(null, result)
+  } else { // 일치 하지 않으면
+    return cb(null, false, { message: '비번불일치' });
+  }
+}))

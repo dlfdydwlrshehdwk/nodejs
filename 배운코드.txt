@@ -1,0 +1,12 @@
+app.get('/',(요청,응답) => { // 페이지 접속시 / 은 메인 , /abcd - abcd로 접속시
+    // 응답.send('메인입니다.') // 단순 글씨만 보낼떄
+    // 응답.sendFile(__dirname + '/파일명.html') // html파일을 보낼때
+  })
+
+
+db.collection('post').insertOne({ 이름 : 값 }) // db에 데이터 단일로 삽입하는법
+
+let result = await db.collection('post').find().toArray() // db에서 모든데이터 가져오기 await이 필수라 위에 함수에 async또한 필수
+db.collection('post').find().toArray().then(()=>{}) // awiat 쓰기 싫다면 then으로 활용가능
+
+let result = await db.collection('post').find().limit(5).toArray() db - post 데이터 중에서 5개만 가져오기 limit

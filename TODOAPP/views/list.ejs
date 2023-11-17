@@ -1,3 +1,15 @@
+<% 
+  let currentPage = locals.현재페이지 != undefined ? 현재페이지 : 1 
+  let data = 글목록;
+  var totalRecord = 글수; //총 게시물 수 
+  var pageSize = 5; //한 페이지당 보여질 게시물 수
+  var totalPage = Math.ceil(totalRecord/pageSize); //총 페이지 수  글총개수 / 5 반올림
+  var blockSize = 5; //블럭당 보여질 페이지네이션 수 
+  var firstPage = currentPage - (currentPage-1)%blockSize; //블럭당 시작 페이지  무조건 1
+  var lastPage = firstPage + (blockSize-1); //블럭당 끝 페이지 무조건 blocksize 
+  var num = totalRecord - (currentPage-1)*pageSize; //페이지당 시작 번호 페이지번호말하는듯.
+ %>
+ 
 <!DOCTYPE html>
 <html lang="kr">
 <head>
@@ -7,16 +19,74 @@
   <link rel="stylesheet" href="/css/main.css">
 </head>
 <body>
-  <%= JSON.stringify(글목록[0]) %>
-  <%- include('nav.ejs') %>
+<!-- currentPage 에서 locals. 하면 없는데이터도 허용해준다고함 -->
+<%- include('nav.ejs') %>
+<%= "현재페이지 : " + currentPage %> <br>
+<%= "총 글수 : " + totalRecord %> <br>
+<%= "첫페이지 " + firstPage %> <br>
+<%= "마지막페이지 " + lastPage %> <br>
+<%= "totalPage : " + totalPage %>
+<%= "num : " + num %>
+
+<!-- sort({ _id : -1}) -1은 내림차순 1은 오름차순 -->
+  <form action="/list" method="get">
+    <select onchange="this.form.submit()"  name="sort" id="">
+      <option value="">정렬하기</option>
+      <option value="namesoon">이름순</option>
+      <option value="timesoon">시간순</option>
+      <option value="goodsoon">추천순</option>
+    </select>
+  </form>
   <ul>
-    <% for(let i = 0; i < 글목록.length; i++){ %>
+    <% for(let i = 0; i < pageSize; i++){ %>
+      <% if(num < 1) break %>
       <li>
-          <h4><a href="/detail/<%= 글목록[i]._id %>">상세페이지</a><%= 글목록[i].title %></h4>
-          <p><%= 글목록[i].content %></p>
-          <a href="/edit/<%= 글목록[i]._id %>">수정하기</a>
+        <span><%= num %></span>
+          <h4><a href="/detail/<%= data[i]._id %>"><%= data[i].title %></a></h4>
+          <p><%= data[i].content %></p>
+          <a href="/edit/<%= data[i]._id %>">수정하기</a>
       </li>
+      <% num = num -1 %>
     <% } %>
   </ul>
+  
+  <div class="pagenation">
+    <!-- 왼쪽버튼 -->
+    <!-- 맨왼쪽에서 누를때 -->
+    <% if(firstPage-1 > 1){ %>
+      <a href="/list/<%= firstPage - 1 %>">&laquo;</a>
+    <% } else {%>
+      <a href="javascript:alert('처음페이지 입니다.')">&laquo;</a>
+    <% }%>
+
+    <%for(let i = firstPage; i <= lastPage; i++){ %>
+      <!-- // 총페이지 수를 넘어서면 멈춤 -->
+      <% if(i > totalPage) break %> 
+        <a href="/list/<%= i%>"><%= i%></a>
+    <%} %>
+
+    <!-- 오른쪽버튼 -->
+    <% if(lastPage < totalPage){ %>
+      <a href="/list/<%= lastPage + 1%>">&raquo;</a>
+    <% } else {%>
+      <a href="javascript:alert('마지막페이지 입니다.')">&raquo;</a>
+    <% }%>
+  </div>
+  <script>
+    let a = 3%4
+    console.log(a)
+  </script>
 </body>
 </html>
+<!-- 지금생각난생각 
+  a에 /list/1 이런식으로보내서 5개데이터만 받기 이런식으로 하면..?
+  ㄴ 이거자첸쉬움 문제는 pagenation과의 합체가 어렵
+
+  1. list 접속 - 기본 1 - 5 보여줌 
+  2-1. 블록2 누르면 list/2 접속 - 데이터params값을 이용해 데이터 빼오게 서버처리
+   
+  2-2. 양 화살표 누르면 ? 뭐로 셋팅해놓지 + 1페이지일때 < 셋팅 + 마지막페이지일때 > 셋팅은 ?
+  < 누르면 현재페이지가 최소일땐 alert 처음페이지입니다 : 현재페이지 -1 로 접속
+  > 누르면 최대페이지일땐alret 마지막페이지입니다 : 현재페이지 + 1 로 접속 
+  근데 모르겠는거  한번에보여질블록개수 ex 5 / (  보여줄게시물수 ex 5 / 총글수 ex 100)  <- 이거의 변수값을뭐로하지
+-->

@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+<body>
+  <%- include('nav.ejs') %>
+  <form class="form-set" action="/login" method="POST">
+    <input name="id" type="text" placeholder="아이디">
+    <input name="pwd" type="password" placeholder="비번">
+    <button type="submit">로그인</button>
+    <button>회원가입</button>
+  </form>
+</body>
+</html>
