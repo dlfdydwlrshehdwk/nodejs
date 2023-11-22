@@ -4,14 +4,17 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Document</title>
+  <link rel="stylesheet" href="/css/main.css">
 </head>
 <body>
   <%- include('nav.ejs') %>
   <form class="form-set" action="/login" method="POST">
-    <input name="id" type="text" placeholder="아이디">
-    <input name="pwd" type="password" placeholder="비번">
+    <input name="username" type="text" placeholder="아이디">
+    <input name="password" type="password" placeholder="비번">
     <button type="submit">로그인</button>
     <button>회원가입</button>
   </form>
+  <script>
+  </script>
 </body>
 </html>

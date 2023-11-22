@@ -1,11 +1,17 @@
+<% 
+  let user = locals.login == undefined ? 0 : 1
+%>
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ko">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Document</title>
 </head>
 <body>
+  <span><%= JSON.stringify(login) %></span>
+
+  </span>
   <ul style="display: flex; gap: 40px;">
     <li>
       <a href="/">홈</a>
@@ -16,9 +22,18 @@
     <li>
       <a href="/write">글작성</a>
     </li>
-    <li>
-      <a href="/login">로그인</a>
-    </li>
+    <% if(user){ %>
+      <li>
+        <a href="/mypage">마이페이지</a>
+      </li>
+    <% } else { %>
+      <li>
+        <a href="/login">로그인</a>
+      </li>
+      <li>
+        <a href="/register">회원가입</a>
+      </li>
+    <% }%>
   </ul>
 </body>
 </html>

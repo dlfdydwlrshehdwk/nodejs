@@ -2,6 +2,8 @@
 const express = require('express')
 const app = express()
 const methodOverride = require('method-override') // 메소드 오버라이드 쓰겠다는소리
+const bcrypt = require('bcrypt') // bcrypt 쓰겠다는 소리
+const MongoStore = require('connect-mongo') // connect-mongo 쓰겠다는 소리 
 
 // passport 라이브러리 셋팅 s//
 const session = require('express-session')
@@ -12,7 +14,12 @@ app.use(passport.initialize())
 app.use(session({
   secret: '암호화에 쓸 비번',
   resave : false, // 유저가 서버로 요청할때마다 세션 갱신할건지 default : false
-  saveUninitialized : false // 로그인 안해도 세션 만들것인지 default : false
+  saveUninitialized : false, // 로그인 안해도 세션 만들것인지 default : false
+  cookie : { maxAge : 60 * 60 * 1000},
+  store : MongoStore.create({
+    mongoUrl : 'mongodb+srv://admin:qwer1234@cluster0.gr6juzz.mongodb.net/?retryWrites=true&w=majority',
+    dbName : 'todoapp'
+  })
 }))
 app.use(passport.session()) 
 // passport 라이브러리 셋팅 e// 
@@ -34,6 +41,10 @@ new MongoClient(url).connect().then((client)=>{
   // 디비연결이 되었을때
   console.log('DB연결성공')
   db = client.db('todoapp')
+}).catch((err)=>{
+  // 디비연결에 실패하였을때
+  console.log(err)
+})
 
   // 8080서버를 엶
   app.listen(8080, () => {
@@ -41,24 +52,20 @@ new MongoClient(url).connect().then((client)=>{
   })
 
   // 라우팅
-  app.get('/',(요청,응답) => { // 메인페이지 접속시
-    // 응답.send('메인입니다.') // 단순 글씨만 보낼떄
-    응답.sendFile(__dirname + '/index.html') // html파일을 보낼때
-  })
+  // app.get('/',(요청,응답) => { // 메인페이지 접속시
+  //   // 응답.send('메인입니다.') // 단순 글씨만 보낼떄
+  //   응답.sendFile(__dirname + '/index.html') // html파일을 보낼때
+  // })
+  app.get('/', async (요청,응답) => {
+    let result = 요청.user
+    응답.render('index.ejs',{login : result})
+  } )
 
   app.get('/list', async (요청,응답) => { // /list 접속시
-
-    /* 
-      생각해봅시다... list로 들어왔어... 리스트를 보여줘야하는데 여기서 조건을 생각.
-      1. 최신순 2. 몇개 보여줄건지? 
-      + 추가기능 페이지내이션 있어야겠지.
-      + 정렬기능 있어야겠지 (최신순, 좋아요가 많은순, 댓글이 많은순이라던지, )
-    */
-
     // let result = await db.collection('post').find().limit(5).toArray()
     let result = await db.collection('post').find().toArray()
-    
-    응답.render('list.ejs' , {글목록 : result, 글수 : result.length})
+    let login = 요청.user
+    응답.render('list.ejs' , {글목록 : result, 글수 : result.length, login : login})
   })
 
   app.get('/list/:id', async (요청,응답) => {
@@ -74,14 +81,11 @@ new MongoClient(url).connect().then((client)=>{
       응답.status(500).send('오류')
     }
   })
-
-  // app.post('/list/:id',async (요청,응답) => {
-  //   console.log(요청.body)
-  // })
   
   // write 글쓰기 페이지 접속시 
   app.get('/write',(요청,응답) => {
-    응답.render('write.ejs')
+    let login = 요청.user
+    응답.render('write.ejs',{login : login})
   })
   // add 글 추가하는 API
   app.post('/add', async (요청,응답) => {
@@ -138,16 +142,100 @@ new MongoClient(url).connect().then((client)=>{
     // 하지만 user에게서 받아오는 id값은 html에 있으면 임의 조작이 가능한데 이럴경우는 어떻게?
     응답.redirect('/list')
   })
+  // delete 글 삭제
+  app.delete('/delete', async (요청,응답) => {
+    let result = await db.collection('post').deleteOne( { _id : new ObjectId(요청.query.docid)})
+    응답.send('삭제완료')
+  })
   // search 검색페이지 접속시
-  app.get('/search', async (요청,응답) => {
+  app.post('/search', async (요청,응답) => {
     try {
-      let result = 1
-      console.log(요청.body)
-      응답.render('search.ejs',{data : result})
+      let tg = 요청.body.search_slct;
+      let result;
+      switch(tg) {
+        case "전체" : result = await db.collection('post').find({
+          // or 쿼리를 사용해서 여러 곳에서 데이터 가져오기
+          $or : [
+            // $regex 를 이용해서 단어의 일부분만 입력해도 가져오기
+            {title : { $regex : 요청.body.search_inp}},
+            {content : { $regex : 요청.body.search_inp}}
+          ]
+        }).toArray() ; break;
+        case "글제목" : result = await db.collection('post').find({title : { $regex : 요청.body.search_inp}}).toArray() ; break;
+        case "글내용" : result = await db.collection('post').find({content : { $regex : 요청.body.search_inp}}).toArray() ; break;
+      }
+      
+      응답.render('search.ejs',{result : result})
     } catch (e) {
       응답.status(500).send(e)
     }
   })
+  // mypage 마이페이지 접속시
+  app.get('/mypage', async (요청,응답) => {
+    let login = 요청.user
+    if(요청.user == undefined) 응답.redirect('/')
+    else {
+      try{
+        
+        응답.render('mypage.ejs',{ login : login})
+      } catch(err) {
+        응답.status(500).send(err)
+      }
+    }
+  })
+  // register 회원가입 페이지 접속시 get
+  app.get('/register', async(요청,응답) => {
+    let login = 요청.user
+    응답.render('register.ejs',{login : login})
+  })
+  app.post('/overlapping', async (요청,응답) => {
+    let isUser = await db.collection('user').findOne({ username : 요청.body.username})
+    let overlapping = isUser == null
+    let alert;
+    if(요청.body.username == ''){
+      alert = '아이디를 입력해주세요'
+    } else if(overlapping) {
+      alert = '사용가능한 아이디입니다.'
+    } else {
+      alert = '중복된 아이디입니다.'
+    }
+    응답.send(alert)
+  })
+  // register 회원가입 페이지 post요청
+  app.post('/register', async (요청,응답) => {
+    // 중복아이디 체크
+    let isUser = await db.collection('user').findOne({ username : 요청.body.username})
+    let overlapping = isUser == null // true면 db에 중복아이디가 없다는것.
+    // 예외처리 필요
+    if(overlapping){ // id 중복체크통과
+      console.log(요청.body)
+      // 비밀번호와 비밀번호 확인 맞는지 체크
+      if(요청.body.password == 요청.body.password_chk){
+        try {
+          // await bcrypt.hash('문자',10) // 문자를 해싱해주고 10글자로 꼬아줌
+          let hash = await bcrypt.hash(요청.body.password , 10)
+      
+          await db.collection('user').insertOne({
+            username : 요청.body.username,
+            password : hash
+          })
+          응답.redirect('/login')
+        } catch {
+          응답.status(500).send('서버에러')
+        }
+      } else {
+        응답.redirect('/')
+      }
+    } else {
+      응답.redirect('/')
+    }
+  })
+  // 비밀번호를 해싱(암호화) 하기위해 bcrypt 라는 라이브러리 설치
+  // npm install bcrypt 
+  // 셋팅 const bcrypt = require('bcrypt')
+
+
+  
 
   // form태그에서 put이나 delete사용가능
   // npm install method-override - 인스톨코드
@@ -164,21 +252,43 @@ new MongoClient(url).connect().then((client)=>{
     if (!result) { // 없으면...
       return cb(null, false, { message: '아이디 DB에 없음' })
     }
-    if (result.password == 입력한비번) { // 아이디있으면 비번이랑 비교
+
+    await bcrypt.compare(입력한비번, result.password) // bcrypt문법 왼쪽에 있는애를 해싱해서 오른쪽파라미터와 비교해서 boolean값 줌
+    // if (result.password == 입력한비번) { // 아이디있으면 비번이랑 비교
+    if (await bcrypt.compare(입력한비번, result.password)) { // 아이디있으면 비번이랑 비교
       return cb(null, result)
     } else { // 일치 하지 않으면
       return cb(null, false, { message: '비번불일치' });
     }
   }))
+  
+  // 요청.login() 쓰면 자동실행
+  passport.serializeUser((user,done)=>{
+    // console.log(user) 로그인할때의 정보가 user에 들어감
+    process.nextTick(()=>{
+      done(null , {id : user._id , username : user.username} ) // 두번째 파라미터는 세션document에 기록됨
+    })
+  })
+  // 유저가 보낸 쿠키 분석
+  // 이 코드 밑에서 API작성하면 요청.user 로 정보 볼 수 있다고함
+  passport.deserializeUser( async (user, done) => {
+    let result = await db.collection('user').findOne({_id : new ObjectId(user.id)})
+    process.nextTick(() => {
+      return done(null, result)
+    })
+  })
+  // 세션을 db에 저장하려면 connect-mongo 라이브러리깔기
+  // npm install connect-mongo
+  // 셋팅 const MongoStore = require('connect-mongo)
+  // app.use(session) 에 추가해주기
+  // store : MongoStore.create({ mongoUrl : 'db접속용url' , dbName : db이름})
 
   // /login 접속시 로그인 페이지 보여주기
   app.get('/login', async (요청,응답) => {
-    응답.render('login.ejs')
+    let login = 요청.user;
+    응답.render('login.ejs',{login : login})
   })
-  }).catch((err)=>{
-    // 디비연결에 실패하였을때
-    console.log(err)
-  })
+  
   // login에서 post요청 했을때
   app.post('/login',async (요청,응답,next) => {
     // error - 에러시 뭐 들어옴 , user - 아이디/비번 검증 완료된 유저정보가 들어옴 , info - 아이디/비번 검증 실패시 에러메시지가 들어옴 
@@ -190,6 +300,7 @@ new MongoClient(url).connect().then((client)=>{
        // 요청.logIn 실행하면 세션 만들어줌
       요청.logIn(user, (error) => {
         if (error) return next(error)
+        
         응답.redirect('/') // 로그인 완료시 실행할 코드
      })
      })(요청, 응답, next)
@@ -197,6 +308,13 @@ new MongoClient(url).connect().then((client)=>{
 
 // 해봐야할거 
 // 1. pagenation - 대충됨... 
-
-// 2. 정렬기능
-// 3. 검색 - 검색페이지를 하나 만들어서
+// 2. 정렬기능 - 생각해보니 정렬이 필요할까? 
+// 3. 검색 - 검색페이지를 하나 만들어서 - 대충완성
+// 4. 회원가입 - 아이디 중복 막기 - ㅇㅋ
+// 5. 회원가입 - 비밀번호 확인 만들기 - 대충 ㅇㅋ 아아디나 비번 조건은 정규식처리
+// 6. 서버에서 회원가입 거르기 - 대충 윤곽만 잡아놈
+// 7. 로그인 한 사람만 글작성가능 - 조금 귀찮아서 나중에
+// 8. 글삭제 본인만 가능  - 조금만 나중에
+// 9. 관리자 기능? - 조금만 나중에
+// 10. env파일에 환경변수 옮기기
+// 11. 자주필요할 함수 ex) 요청.user 같은거 미들웨워 화 하기

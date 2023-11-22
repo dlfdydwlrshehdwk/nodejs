@@ -23,3 +23,6 @@ sendFile 이 아닌 render를 사용 + 기본 파일위치는 views폴더이다.
 
 ejs에서는 inclued() 써서 다른 ejs파일을 컴포넌트처럼 활용가능
 ex) <%- include('파일명.ejs') %> 이렇게 쓸때 데이터를 보낼수도 있음  ex) <%- include('파일명.ejs', { age : 20}) %> 
+
+ejs 문법은 자바스크립트 구역 안에서 사용이 가능하며
+문자 '' 안에 담아서 ejs문법으로 사용해야함.

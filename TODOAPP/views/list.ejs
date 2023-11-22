@@ -42,9 +42,10 @@
       <% if(num < 1) break %>
       <li>
         <span><%= num %></span>
-          <h4><a href="/detail/<%= data[i]._id %>"><%= data[i].title %></a></h4>
-          <p><%= data[i].content %></p>
-          <a href="/edit/<%= data[i]._id %>">수정하기</a>
+        <h4><a href="/detail/<%= data[i]._id %>"><%= data[i].title %></a></h4>
+        <p><%= data[i].content %></p>
+        <a href="/edit/<%= data[i]._id %>">수정하기</a>
+        <button data-id="<%= data[i]._id%>" class="del">삭제하기</button>
       </li>
       <% num = num -1 %>
     <% } %>
@@ -73,23 +74,65 @@
     <% }%>
   </div>
 
-  <div class="form-set">
-    <form action="/search" method="get" style="display: flex;">
+  
+  <!-- 검색 -->
+  <div class="form-set search">
+    <form action="/search" method="post" style="display: flex;">
       <div class="inp-set slct-type" style="display: flex;">
         <div class="slct">
-          <select name="search" id="">
-            <option value="">구분</option>
-            <option value="">글제목</option>
-            <option value="">글내용</option>
+          <select name="search_slct" id="">
+            <option value="전체">전체</option>
+            <option value="글제목">글제목</option>
+            <option value="글내용">글내용</option>
           </select>
         </div>
-        <input name="search" type="text">
+        <input name="search_inp" type="text">
       </div>
-      <button type="submit">검색</button>
+      <button type="submit" onclick="
+      if(document.querySelector('.search input[type=text]').value == ''){
+        alert('검색내용입력')
+        event.preventDefault()
+        } else {
+          document.querySelector('.search form').submit()
+        }"
+        >검색</button>
     </form>
   </div>
   <script>
+    // ajax 사용
+    document.querySelectorAll('.del').forEach((ele,idx) => {
+      ele.addEventListener('click',function(e){
+        let a = e.target.dataset.id // 삭제버튼에 data-id 를 글목록id로 해놨음
+        fetch('/delete?docid=' + a, {
+          method : 'delete',
+        })
+        .then((r)=>r.text()) // 서버에서 보내는 데이터가 텍스트면 .text() , arr이나obj면 .json()
+        .then((r)=> { 
+          e.target.parentElement.style.display = 'none';
+         })
+    })
     
+    // axios 사용
+    // 준비 - axios cnd가져오거나 인스톨 했다는 가정
+    // axios.get('/url').then((r)=>{console.log(r)
+    
+    // }).catch(()=>{
+    //   // 에러시 실행할코드
+    // })
+
+
+      // 서버로 데이터를 보내는 다른 방법
+      // 1. URL parameter
+      // url/:id 서버에선 이렇게받음
+      // fetch('/url/홍길동') 이런식  서버에서 받는 방법은 요청.params
+      // 2. query stinrg
+      // 서버에선 /url 로만 작성해놓음
+      // fetch('/url?데이터이름=데이터값') 이렇게 보낼 수 있음 서버에서 받는 방법은 요청.query
+      // 여러개 사용은 &기호 사용 fetch('/url?이름1=값&이름2=값')
+      // 장점 - 편함 , get post del put 전부 사용가능
+      // 단점 - url에 보이기에 중요한데이터전송 ㄴㄴ 
+      
+    })
   </script>
 </body>
 </html>
