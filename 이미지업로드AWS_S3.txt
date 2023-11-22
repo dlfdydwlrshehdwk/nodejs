@@ -1,0 +1,118 @@
+파일저장용클라우드
+AWS S3
+
+파일같은거 저장하고 꺼낼때 파일저장용 클라우드 서비스를 빌리면 좋다고함
+구글이나 네이버 클라우드가 더 저렴하다는데 
+사람들이 aws 좋아한다고함.
+
+아이디를 만들고 카드등록을하면 1년 5G 무료지원해준다고함.
+
+메인창에서 우측상단 나라설정 한국으로
+
+1. 사용자생성/액세스 키 발급 하기
+검색창 - iam 쳐서 들어가고 -> 왼쪽창 - 사용자
+-> 사용자생성 -> 사용자생성해주기 -> 직접 정책 연결
+검색창 s3검색 AmazonS3FullAccess 체크 다음 생성완료
+-> 사용자명클릭 -> 액세스 키 만들기 클릭 -> 로컬코드 다음
+-> 액세스키와 arn 생성완료
+
+2. s3셋팅하기
+검색창에 s3검색 -> 버킷만들기 ( 버킷은 하나의 하드디스크라고 생각 )
+-> 버킷이름은 중복불가 , acl비활성 , 퍼블릭 다 차단해제해놓기 
+버킷만들기 성공
+
+버킷들어가서 권한설정
+권한은 1. 버킷정책 쓰거나 2. ACL 쓰거나 인데
+요즘은 버킷정책을 한다고함
+버킷정책 편집 -> 
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "1",
+            "Effect": "Allow",
+            "Principal": "*",
+            "Action": "s3:GetObject",
+            "Resource": "arn:aws:s3:::님들버킷명/*"
+        },
+        {
+            "Sid": "2",
+            "Effect": "Allow",
+            "Principal": {
+                "AWS": "님들ARN"
+            },
+            "Action": [
+                "s3:PutObject",
+                "s3:DeleteObject"
+            ],
+            "Resource": "arn:aws:s3:::님들버킷명/*"
+        }
+    ]
+} 
+
+CORS 설정 ( 어떤 도메인에서 버킷안의 파일들을 사용할 수 있는지 설정하는부분)
+AllowedOrigins 안에 사이트 주소 넣으면 다른 사이트에서 쓰기 삭제 못함
+개발중일땐 * 넣어놓는다.
+[
+    {
+        "AllowedHeaders": [
+            "*"
+        ],
+        "AllowedMethods": [
+            "PUT",
+            "POST"
+        ],
+        "AllowedOrigins": [
+            "*"
+        ],
+        "ExposeHeaders": [
+            "ETag"
+        ]
+    }
+] 
+
+
+이미지를 aws에 넣는법
+1. 글작성페이지에 이미지 input
+2. 서버는 이미지 받으면 s3에 업로드
+3. 이미지 url은 db에 글과 함께 저장
+4. 이미지 필요하면 db에 있던 url꺼내서html img태그로 넣기
+
+
+<!-- 서버로 이미지를 올리기위해 enctype 설정 -->
+<form action="/add" method="POST" enctype="multipart/form-data">
+  <h3>글작성</h3>
+  <input name="title" type="text" placeholder="제목"><br>
+  <input name="content" type="text" placeholder="내용"><br>
+  <input type="file" name="img1" accept="image/*">
+  <!-- img파일을 가져가는걸 권장하기위한 accept -->
+  <button type="submit">작성</button>
+</form>
+
+// 서버는 이미지받으면 s3에 업로드
+multer / formidable 라이브러리를 쓰면 이 과정이 편함
+npm 인스톨하기
+npm install multer multer-s3 @aws-sdk/client-s3
+multer가 기본 라이브러리이고 뒤에 2개는 s3이용을 위해 필요한 라이브러리
+
+// server.js 셋팅하기
+const { S3Client } = require('@aws-sdk/client-s3')
+const multer = require('multer')
+const multerS3 = require('multer-s3')
+const s3 = new S3Client({
+  region : 'ap-northeast-2',
+  credentials : {
+      accessKeyId : 'IAM에서 발급받은 액세스키',
+      secretAccessKey : 'IAM에서 발급받은 시크릿키'
+  }
+})
+
+const upload = multer({
+  storage: multerS3({
+    s3: s3,
+    bucket: '님들버킷이름',
+    key: function (요청, file, cb) {
+      cb(null, Date.now().toString()) //업로드시 파일명 변경가능
+    }
+  })
+})

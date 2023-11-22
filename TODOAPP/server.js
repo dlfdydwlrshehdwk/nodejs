@@ -24,6 +24,38 @@ app.use(session({
 app.use(passport.session()) 
 // passport 라이브러리 셋팅 e// 
 
+// multer 사용하겠다는 소리
+const { S3Client } = require('@aws-sdk/client-s3')
+const multer = require('multer')
+const multerS3 = require('multer-s3')
+const s3 = new S3Client({
+  region : 'ap-northeast-2',
+  credentials : {
+      accessKeyId : process.env.S3_KEY,
+      secretAccessKey : process.env.S3_SECRET
+  }
+})
+
+const upload = multer({
+  storage: multerS3({
+    s3: s3,
+    bucket: 'dotlqksk',
+    key: function (요청, file, cb) {
+      cb(null, Date.now().toString()) //업로드시 파일명 변경가능
+      // 겹치는걸 피하기위해 날짜같은걸 넣는다고함
+      // 파일명같은걸 넣고싶다면 요청.file 하면 나온다고함.
+    }
+  })
+})
+// 사진한장받아올때 upload.single('img1') , 파일명은 요청.file안에있음
+// 사진여러장받아올때 upload.array('인풋name' , 2(최대장수) ) , 파일명은 요청.files 
+// 그럼 location 안에 있는 주소가 img src이다. 요청.file.location
+// 함수를 미들웨어로 사용해도 되고 에러처리를하려면 API안에서 함수호출하는것이 좋다
+// ex ) upload.single('인풋name')(요청,응답,(err)=>{
+//    if(err) return 응답.send('업로드에러')
+// }) 대충이런느낌 조건문안에서 try catch하는 느낌으로다가
+
+
 app.use(methodOverride('_method')) // 메소드 오버라이드 쓰겠다는 소리
 app.use(express.static(__dirname + '/public')) // 폴더를 server.js에 등록해야 폴더안의 파일들 html에서 사용가능 .css .js .jpg 이런파일을 static파일이라고함
 app.set('view engine','ejs') // ejs 사용할거임
@@ -36,7 +68,7 @@ app.use(express.urlencoded({extended:true}))
 const { MongoClient, ObjectId } = require('mongodb')
 
 let db
-const url = 'mongodb+srv://admin:qwer1234@cluster0.gr6juzz.mongodb.net/?retryWrites=true&w=majority'
+const url = "mongodb+srv://admin:qwer1234@cluster0.gr6juzz.mongodb.net/?retryWrites=true&w=majority"
 new MongoClient(url).connect().then((client)=>{
   // 디비연결이 되었을때
   console.log('DB연결성공')
@@ -47,7 +79,7 @@ new MongoClient(url).connect().then((client)=>{
 })
 
   // 8080서버를 엶
-  app.listen(8080, () => {
+  app.listen(process.env.PORT, () => {
     console.log('8080')
   })
 
@@ -89,20 +121,35 @@ new MongoClient(url).connect().then((client)=>{
   })
   // add 글 추가하는 API
   app.post('/add', async (요청,응답) => {
-    // 간혹 서버에 문제가 생길 수 있으니 try catch문으로 처리 try - 잘되면 , catch - 안됐을때
-    try {
-      // 예외처리 - 빈칸으로 전송한다던가 할때 ( 여러상황을 예외처리하는게 좋음 , js로 예외처리를 할 수 있으나 코드는 조작이 가능하니 최종은 서버에서 한다. )
-      if ( 요청.body.title == '' ) {
-        응답.send('제목을 입력하세요')
-      } else {
-        let data = {title : 요청.body.title, content : 요청.body.content}
-        await db.collection('post').insertOne(data)
-        응답.redirect('/list') // 다른페이지로 이동시켜줌
-      }
-    } catch(e) {
-      // console.log(e) // 에러의 이유
-      응답.status(500).send('서버에러')
+    let database = await db.collection('post')
+
+    upload.single('img1')(요청,응답,(err)=>{
+      if(err) return 응답.send(err)
+      try {
+        console.log(요청.body,요청.file) 
+    }  catch {
+
     }
+    })
+    // 간혹 서버에 문제가 생길 수 있으니 try catch문으로 처리 try - 잘되면 , catch - 안됐을때
+      // try {
+      //   // 예외처리 - 빈칸으로 전송한다던가 할때 ( 여러상황을 예외처리하는게 좋음 , js로 예외처리를 할 수 있으나 코드는 조작이 가능하니 최종은 서버에서 한다. )
+      //   if ( 요청.body.title == '' ) {
+      //     응답.send('제목을 입력하세요')
+      //   } else {
+      //     let data = {
+      //       title : 요청.body.title, 
+      //       content : 요청.body.content,
+      //       image : 요청.file.location
+      //     }
+      //     database.insertOne(database)
+      //     응답.redirect('/list') // 다른페이지로 이동시켜줌
+      //   }
+      // } catch(e) {
+      //   // console.log(e) // 에러의 이유
+      //   응답.status(500).send('서버에러') 
+      // } 
+
   })
   // detail 상세페이지 접속시
   app.get('/detail/:id',async (요청,응답)=>{ // : 뒤엔 아무렇게 작명 // /detail/아무문자 가 들어오면 이게 실행
