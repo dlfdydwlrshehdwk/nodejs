@@ -54,5 +54,40 @@ api마다 db에 연결하면 성능적문제가 생기지 않을까?
 그렇기에 따로 파일을 만들어 관리하고 가져다 쓰는 방식을 사용한다. 
 
 db연결코드를 분리한다.
+// database.js
+const { MongoClient } = require("mongodb")
+// 밑에 2줄만가져오고 위에 이건 몽고클라이언트에 ctrl space해서 가져옴 
 const url = process.env.DB_URL
-new MongoClient(url).connect()
+let connectDB = new MongoClient(url).connect()
+// 밖에서 임포트 할수있게 해줌
+module.exports = connectDB
+
+// server.js 
+  const { MongoClient, ObjectId } = require('mongodb')
+  let connectDB = require('./database')
+  let db;
+  connectDB.then((client)=>{
+    console.log('db연경성공')
+    db = client.db('todoapp')
+    // 8080서버를 엶
+    app.listen(process.env.PORT, () => {
+      console.log('8080')
+    })
+  })
+  .catch((err)=>{
+    console.log(err)
+  })
+
+
+  요약
+  라우터 폴더만들고 어쩌구.js안에 만들어서
+  셋팅용으로 router라는 변수를 만들고 const router = require('express').Router()
+
+  app.어쩌구 들 router.어쩌구로 바꾸고싶다면
+
+  마지막에 module.exports = router or 변수명 
+
+  server.js 에선
+  require('파일경로')
+  서버연결할거면
+  app.use('/어쩌구',require('파일경로'))

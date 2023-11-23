@@ -12,12 +12,12 @@ connectDB.then((client)=>{
   console.log(err)
 })
 router.get('/pants', async (요청,응답)=>{
-  await db.collection('post').find().toArray()
+  let a = JSON.stringify(await db.collection('post').find().toArray()) + '바지페이지'
   
-  응답.send('바지페이지')
+  응답.send(a)
 })
 router.get('/shirts',(요청,응답)=>{
   응답.send('셔츠페이지')
 })
-// 에러나니 내일더하셈
+
 module.exports = router

@@ -64,25 +64,44 @@ app.set('view engine','ejs') // ejs 사용할거임
 app.use(express.json())
 app.use(express.urlencoded({extended:true})) 
 
+// 원래 db설정
 // 몽고디비 라이브러리 셋팅
-const { MongoClient, ObjectId } = require('mongodb')
-let connectDB = require('./database.js')
+// const { MongoClient, ObjectId } = require('mongodb')
+// const url = process.env.DB_URL
 
-// api분리 db쪽 영상보면서 진행중이였음  
-let db
-connectDB.then((client)=>{
-  // 디비연결이 되었을때
-  console.log('DB연결성공')
-  db = client.db('todoapp')
-}).catch((err)=>{
-  // 디비연결에 실패하였을때
-  console.log(err)
-})
-
-  // 8080서버를 엶
-  app.listen(process.env.PORT, () => {
-    console.log('8080')
+// let db
+// new MongoClient(url).connect().then((client)=>{
+  //   // 디비연결이 되었을때
+  //   console.log('DB연결성공')
+  //   db = client.db('todoapp')
+  // }).catch((err)=>{
+    //   // 디비연결에 실패하였을때
+    //   console.log(err)
+    // })
+    
+  // database.js 에 db를 따로 빼서 사용
+  const { MongoClient, ObjectId } = require('mongodb')
+  let connectDB = require('./database')
+  let db;
+  connectDB.then((client)=>{
+    console.log('db연경성공')
+    db = client.db('todoapp')
+    // 8080서버를 엶
+    app.listen(process.env.PORT, () => {
+      console.log('8080')
+    })
   })
+  .catch((err)=>{
+    console.log(err)
+  })
+  
+  
+  // // 8080서버를 엶 - db가 연동되었을때만 열기위해 db연동일때 서버를 열게끔함
+  // app.listen(process.env.PORT, () => {
+  //   console.log('8080')
+  // })
+
+
 
   // 라우팅
   // app.get('/',(요청,응답) => { // 메인페이지 접속시
@@ -350,7 +369,7 @@ connectDB.then((client)=>{
      })(요청, 응답, next)
   })
 
-  // 라우터 테스트 잘됨
+  // 라우터 테스트 잘됨 - shop.js
   app.use('/shop',require('./routes/shop.js'))
 // 해봐야할거 
 // 1. pagenation - 대충됨... 
@@ -365,4 +384,5 @@ connectDB.then((client)=>{
 // 10. env파일에 환경변수 옮기기
 // 11. 자주필요할 함수 ex) 요청.user 같은거 미들웨어 화 하기
 // 12. 이미지넣고 이미지있을땐 보여주기 - ㅇㅋ
-// 13. 각 API들 라우터 분리하기 - 영상보던중 마저보고하기
+// 13. 각 API들 라우터 분리하기 - 영상보고 완료는해놨음 정리하고 다른데도 나눠보면 좋을듯
+// 14. aws서버에 노드js올리는거부터 하고있었음
