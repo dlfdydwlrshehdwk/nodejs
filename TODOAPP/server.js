@@ -4,7 +4,7 @@ const app = express()
 const methodOverride = require('method-override') // 메소드 오버라이드 쓰겠다는소리
 const bcrypt = require('bcrypt') // bcrypt 쓰겠다는 소리
 const MongoStore = require('connect-mongo') // connect-mongo 쓰겠다는 소리 
-
+require('dotenv').config() // env파일 쓰겠다는 소리
 // passport 라이브러리 셋팅 s//
 const session = require('express-session')
 const passport = require('passport')
@@ -17,7 +17,7 @@ app.use(session({
   saveUninitialized : false, // 로그인 안해도 세션 만들것인지 default : false
   cookie : { maxAge : 60 * 60 * 1000},
   store : MongoStore.create({
-    mongoUrl : 'mongodb+srv://admin:qwer1234@cluster0.gr6juzz.mongodb.net/?retryWrites=true&w=majority',
+    mongoUrl : process.env.DB_URL,
     dbName : 'todoapp'
   })
 }))
@@ -66,10 +66,11 @@ app.use(express.urlencoded({extended:true}))
 
 // 몽고디비 라이브러리 셋팅
 const { MongoClient, ObjectId } = require('mongodb')
+let connectDB = require('./database.js')
 
+// api분리 db쪽 영상보면서 진행중이였음  
 let db
-const url = "mongodb+srv://admin:qwer1234@cluster0.gr6juzz.mongodb.net/?retryWrites=true&w=majority"
-new MongoClient(url).connect().then((client)=>{
+connectDB.then((client)=>{
   // 디비연결이 되었을때
   console.log('DB연결성공')
   db = client.db('todoapp')
@@ -124,32 +125,28 @@ new MongoClient(url).connect().then((client)=>{
     let database = await db.collection('post')
 
     upload.single('img1')(요청,응답,(err)=>{
+      // 이미지업로드에 에러가 걸릴때.
       if(err) return 응답.send(err)
+      // 간혹 서버에 문제가 생길 수 있으니 try catch문으로 처리 try - 잘되면 , catch - 안됐을때
       try {
-        console.log(요청.body,요청.file) 
-    }  catch {
-
-    }
+        // 예외처리 - 빈칸으로 전송한다던가 할때 ( 여러상황을 예외처리하는게 좋음 , js로 예외처리를 할 수 있으나 코드는 조작이 가능하니 최종은 서버에서 한다. )
+        if ( 요청.body.title == '' ) {
+          응답.send('제목을 입력하세요')
+        } else {
+          let data = {
+            title : 요청.body.title, 
+            content : 요청.body.content,
+            image : 요청.file.location
+          }
+          database.insertOne(data)
+          응답.redirect('/list') // 다른페이지로 이동시켜줌
+        }
+      } catch(e) {
+        // console.log(e) // 에러의 이유
+        응답.status(500).send('서버에러') 
+      } 
     })
-    // 간혹 서버에 문제가 생길 수 있으니 try catch문으로 처리 try - 잘되면 , catch - 안됐을때
-      // try {
-      //   // 예외처리 - 빈칸으로 전송한다던가 할때 ( 여러상황을 예외처리하는게 좋음 , js로 예외처리를 할 수 있으나 코드는 조작이 가능하니 최종은 서버에서 한다. )
-      //   if ( 요청.body.title == '' ) {
-      //     응답.send('제목을 입력하세요')
-      //   } else {
-      //     let data = {
-      //       title : 요청.body.title, 
-      //       content : 요청.body.content,
-      //       image : 요청.file.location
-      //     }
-      //     database.insertOne(database)
-      //     응답.redirect('/list') // 다른페이지로 이동시켜줌
-      //   }
-      // } catch(e) {
-      //   // console.log(e) // 에러의 이유
-      //   응답.status(500).send('서버에러') 
-      // } 
-
+      
   })
   // detail 상세페이지 접속시
   app.get('/detail/:id',async (요청,응답)=>{ // : 뒤엔 아무렇게 작명 // /detail/아무문자 가 들어오면 이게 실행
@@ -353,6 +350,8 @@ new MongoClient(url).connect().then((client)=>{
      })(요청, 응답, next)
   })
 
+  // 라우터 테스트 잘됨
+  app.use('/shop',require('./routes/shop.js'))
 // 해봐야할거 
 // 1. pagenation - 대충됨... 
 // 2. 정렬기능 - 생각해보니 정렬이 필요할까? 
@@ -364,4 +363,6 @@ new MongoClient(url).connect().then((client)=>{
 // 8. 글삭제 본인만 가능  - 조금만 나중에
 // 9. 관리자 기능? - 조금만 나중에
 // 10. env파일에 환경변수 옮기기
-// 11. 자주필요할 함수 ex) 요청.user 같은거 미들웨워 화 하기
+// 11. 자주필요할 함수 ex) 요청.user 같은거 미들웨어 화 하기
+// 12. 이미지넣고 이미지있을땐 보여주기 - ㅇㅋ
+// 13. 각 API들 라우터 분리하기 - 영상보던중 마저보고하기

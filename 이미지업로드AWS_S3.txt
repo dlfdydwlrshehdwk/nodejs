@@ -116,3 +116,29 @@ const upload = multer({
     }
   })
 })
+
+// API에서 사용하기
+1. 미들웨어로사용 ( 에러처리 힘듬 )
+app.post('/add', upload.single('img1'), (요청, 응답) => {
+  console.log(요청.file)
+  await db.collection('post').insertOne({
+    title : 요청.body.title,
+    content : 요청.body.content,
+    img : 요청.file.location // 이미지 실 주소
+  })
+  (생략)
+}) 
+
+2. API안에서사용 ( 에러처리 가능 )
+s3가 이상하면 에러가 날 수 있음 에러가 나면 서버또한 멈추기에 에러처리.
+app.post('/add', (요청, 응답) => {
+    upload.single('img1')(요청, 응답, (err)=>{
+      if (err) return 응답.send('에러남') // 에러처리
+      이미지 업로드성공시 실행할 코드~~
+    })
+})
+
+// 이미지를 여러개 사용하고 싶다면
+upload.array('인풋name' , 한번에 업로드할 이미지 최대갯수(숫자로) )
+한장이 upload.single('인풋name')
+! html input 타입file에 multiple속성 넣어놔야됨  

@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Document</title>
+  <link rel="stylesheet" href="/css/main.css">
 </head>
 <body>
   <%- include('nav.ejs') %>
@@ -11,6 +12,9 @@
   <div>
     <h3><%= result.title %></h3>
     <p><%= result.content %></p>
+    <% if(result.image){ %>
+    <img src="<%= result.image %>" alt="">
+    <% } %>
   </div>
 </body>
 </html>
