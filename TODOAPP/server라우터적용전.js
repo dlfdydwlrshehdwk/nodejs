@@ -113,7 +113,26 @@ app.use(express.urlencoded({extended:true}))
     응답.render('index.ejs',{login : result})
   } )
 
-  
+  app.get('/list', async (요청,응답) => { // /list 접속시
+    // let result = await db.collection('post').find().limit(5).toArray()
+    let result = await db.collection('post').find().toArray()
+    let login = 요청.user
+    응답.render('list.ejs' , {글목록 : result, 글수 : result.length, login : login})
+  })
+
+  app.get('/list/:id', async (요청,응답) => {
+    try {
+      let nowPage = 요청.params.id;
+      let skip = (요청.params.id - 1) * 5 ;
+      let limit = 5;
+      let result = await db.collection('post').find().skip(skip).limit(limit).toArray();
+      let data = await db.collection('post').find().toArray()
+      console.log(요청.body,요청.params)
+      응답.render('list.ejs' , {글목록 : result , params : 요청.params.id, 글수 : data.length, 현재페이지 : nowPage})
+    } catch {
+      응답.status(500).send('오류')
+    }
+  })
   
   // write 글쓰기 페이지 접속시 
   app.get('/write',(요청,응답) => {
@@ -352,9 +371,6 @@ app.use(express.urlencoded({extended:true}))
 
   // 라우터 테스트 잘됨 - shop.js
   app.use('/shop',require('./routes/shop.js'))
-  // Router 
-  app.use('/list',require('./routes/list.js'))
-
 // 해봐야할거 
 // 1. pagenation - 대충됨... 
 // 2. 정렬기능 - 생각해보니 정렬이 필요할까? 
