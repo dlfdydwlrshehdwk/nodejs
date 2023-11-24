@@ -11,6 +11,7 @@ connectDB.then((client)=>{
   // 디비연결에 실패하였을때
   console.log(err)
 })
+
 router.get('/pants', async (요청,응답)=>{
   let a = JSON.stringify(await db.collection('post').find().toArray()) + '바지페이지'
   

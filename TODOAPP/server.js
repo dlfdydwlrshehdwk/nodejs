@@ -232,19 +232,7 @@ app.use(express.urlencoded({extended:true}))
     let login = 요청.user
     응답.render('register.ejs',{login : login})
   })
-  app.post('/overlapping', async (요청,응답) => {
-    let isUser = await db.collection('user').findOne({ username : 요청.body.username})
-    let overlapping = isUser == null
-    let alert;
-    if(요청.body.username == ''){
-      alert = '아이디를 입력해주세요'
-    } else if(overlapping) {
-      alert = '사용가능한 아이디입니다.'
-    } else {
-      alert = '중복된 아이디입니다.'
-    }
-    응답.send(alert)
-  })
+ 
   // register 회원가입 페이지 post요청
   app.post('/register', async (요청,응답) => {
     // 중복아이디 체크
@@ -325,13 +313,7 @@ app.use(express.urlencoded({extended:true}))
   // npm install connect-mongo
   // 셋팅 const MongoStore = require('connect-mongo)
   // app.use(session) 에 추가해주기
-  // store : MongoStore.create({ mongoUrl : 'db접속용url' , dbName : db이름})
-
-  // /login 접속시 로그인 페이지 보여주기
-  app.get('/login', async (요청,응답) => {
-    let login = 요청.user;
-    응답.render('login.ejs',{login : login})
-  })
+  // store : MongoStore.create({ mongoUrl : 'db접속용url' , dbName : db이름}
   
   // login에서 post요청 했을때
   app.post('/login',async (요청,응답,next) => {
@@ -354,6 +336,8 @@ app.use(express.urlencoded({extended:true}))
   app.use('/shop',require('./routes/shop.js'))
   // Router 
   app.use('/list',require('./routes/list.js'))
+  app.use('/login',require('./routes/login.js'))
+  app.use('/overlapping',require('./routes/overlapping.js'))
 
 // 해봐야할거 
 // 1. pagenation - 대충됨... 
