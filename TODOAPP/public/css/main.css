@@ -1,3 +1,28 @@
+body,body * {
+  margin: 0;
+  padding: 0;
+}
+
+.header {
+  border-bottom: 1px solid #000;
+  padding: 0 40px;
+}
+.header-wrap {
+  height: 80px;
+  display: flex;
+  max-width: 1440px;
+  margin: 0 auto;
+}
+.header-left {
+  width: 50%;
+  line-height: 80px;
+}
+.header-right {
+  width: 50%;
+  line-height: 80px;
+}
+
+
 a{
   text-decoration: none;
 }
