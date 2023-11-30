@@ -4,24 +4,33 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Document</title>
-  <link rel="stylesheet" href="/css/main.css">
+  <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
   <%- include('nav.ejs') %>
 
-  <form action="/register" method="post" class="form-set">
-    <div class="inp-set">
-      <span>아이디</span>
-      <input name="username" type="text" placeholder="아이디를 입력해주세요">
-      <button class="overlapping" type="button">중복확인</button><br>
-      <span>비밀번호</span>
-      <input name="password" type="password" placeholder="비밀번호를 입력해주세요"><br>
-      <span>비밀번호확인</span>
-      <input name="password_chk" type="password" placeholder="비밀번호 확인">
-      <span class="pwd_chk_txt"></span>
+  <main>
+    <div class="container">
+      <div class="box register">
+        <form action="/register" method="post" class="form-set">
+          <div class="input-set">
+            <input name="username" type="text" placeholder="아이디를 입력해주세요">
+            <button class="overlapping" type="button">중복확인</button><br>
+          </div>
+          <div class="input-set">
+            <input name="password" type="password" placeholder="비밀번호를 입력해주세요"><br>
+          </div>
+          <div class="input-set">
+            <input name="password_chk" type="password" placeholder="비밀번호 확인">
+            <span class="pwd_chk_txt"></span>
+          </div>
+          <div class="btn-set mt-20">
+            <button class="w-100" type="submit">가입하기</button>
+          </div>
+        </form>
       </div>
-    <button type="submit">가입하기</button>
-  </form>
+    </div>
+  </main>
 
 
   <script>

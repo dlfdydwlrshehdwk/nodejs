@@ -26,3 +26,10 @@ ex) <%- include('파일명.ejs') %> 이렇게 쓸때 데이터를 보낼수도 �
 
 ejs 문법은 자바스크립트 구역 안에서 사용이 가능하며
 문자 '' 안에 담아서 ejs문법으로 사용해야함.
+
+
+link 태그로 css 넣을때 주의할점 
+server.js 에
+app.use(express.static(__dirname + '/assets'))
+이런식으로 경로를 지정해주어야함
+ejs파일안에서는 /assets 다음에 들어가야할 경로를 작성하면됨 

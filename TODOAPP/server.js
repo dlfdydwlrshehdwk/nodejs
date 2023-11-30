@@ -4,6 +4,7 @@ const app = express()
 const methodOverride = require('method-override') // 메소드 오버라이드 쓰겠다는소리
 const bcrypt = require('bcrypt') // bcrypt 쓰겠다는 소리
 const MongoStore = require('connect-mongo') // connect-mongo 쓰겠다는 소리 
+
 require('dotenv').config() // env파일 쓰겠다는 소리
 // passport 라이브러리 셋팅 s//
 const session = require('express-session')
@@ -57,7 +58,7 @@ const upload = multer({
 
 
 app.use(methodOverride('_method')) // 메소드 오버라이드 쓰겠다는 소리
-app.use(express.static(__dirname + '/public')) // 폴더를 server.js에 등록해야 폴더안의 파일들 html에서 사용가능 .css .js .jpg 이런파일을 static파일이라고함
+app.use(express.static(__dirname + '/assets')) // 폴더를 server.js에 등록해야 폴더안의 파일들 html에서 사용가능 .css .js .jpg 이런파일을 static파일이라고함
 app.set('view engine','ejs') // ejs 사용할거임
 
 // 요청.body - 유저가 form태그로 보낸 데이터인데 이거 꺼내오는게 상당히 귀찮은데 이걸 쉽게해주는 코드2줄 ( 이걸 셋팅해놔야 요청.body 사용가능 )
@@ -85,6 +86,7 @@ app.use(express.urlencoded({extended:true}))
   let db;
   connectDB.then((client)=>{
     console.log('db연경성공')
+
     db = client.db('todoapp')
     // 8080서버를 엶
     app.listen(process.env.PORT, () => {
@@ -115,53 +117,37 @@ app.use(express.urlencoded({extended:true}))
 
   
   
-  // write 글쓰기 페이지 접속시 
-  app.get('/write',(요청,응답) => {
-    let login = 요청.user
-    응답.render('write.ejs',{login : login})
-  })
-  // add 글 추가하는 API
-  app.post('/add', async (요청,응답) => {
-    let database = await db.collection('post')
 
-    upload.single('img1')(요청,응답,(err)=>{
-      // 이미지업로드에 에러가 걸릴때.
-      if(err) return 응답.send(err)
-      // 간혹 서버에 문제가 생길 수 있으니 try catch문으로 처리 try - 잘되면 , catch - 안됐을때
-      try {
-        // 예외처리 - 빈칸으로 전송한다던가 할때 ( 여러상황을 예외처리하는게 좋음 , js로 예외처리를 할 수 있으나 코드는 조작이 가능하니 최종은 서버에서 한다. )
-        if ( 요청.body.title == '' ) {
-          응답.send('제목을 입력하세요')
-        } else {
-          let data = {
-            title : 요청.body.title, 
-            content : 요청.body.content,
-            image : 요청.file.location
-          }
-          database.insertOne(data)
-          응답.redirect('/list') // 다른페이지로 이동시켜줌
-        }
-      } catch(e) {
-        // console.log(e) // 에러의 이유
-        응답.status(500).send('서버에러') 
-      } 
-    })
+  // // add 글 추가하는 API
+  // app.post('/add', async (요청,응답) => {
+  //   let database = await db.collection('post')
+  //   // upload.single() 안에 들어가는애랑 form태그에서 넣는 name값과 일치해야 됨!
+  //   upload.single('img1')(요청,응답,(err)=>{
+  //     // 이미지업로드에 에러가 걸릴때.
+  //     // console.log(요청.file)
+  //     if(err) return 응답.send(err)
+  //     // 간혹 서버에 문제가 생길 수 있으니 try catch문으로 처리 try - 잘되면 , catch - 안됐을때
+  //     try {
+  //       // 예외처리 - 빈칸으로 전송한다던가 할때 ( 여러상황을 예외처리하는게 좋음 , js로 예외처리를 할 수 있으나 코드는 조작이 가능하니 최종은 서버에서 한다. )
+  //       if ( 요청.body.title == '' ) {
+  //         응답.send('제목을 입력하세요')
+  //       } else {
+  //         let data = {
+  //           title : 요청.body.title, 
+  //           content : 요청.body.content,
+  //           image : 요청.file.location ? 요청.file.location : null
+  //         }
+  //         database.insertOne(data)
+  //         응답.redirect('/list') // 다른페이지로 이동시켜줌
+  //       }
+  //     } catch(e) {
+  //       // console.log(e) // 에러의 이유
+  //       응답.status(500).send('서버에러' + e) 
+  //     } 
+  //   })
       
-  })
-  // detail 상세페이지 접속시
-  app.get('/detail/:id',async (요청,응답)=>{ // : 뒤엔 아무렇게 작명 // /detail/아무문자 가 들어오면 이게 실행
-    let params = 요청.params // : 뒤에오는 id부분
-    console.log(params)
-    try {
-      let result = await db.collection('post').findOne({ _id : new ObjectId(요청.params.id) })
-      if(result == null) { // try catch만으로는 예외처리를 다 할 수가없기에 테스트를 해보고 예외처리를 하는게 중요
-        응답.status(404).send('없는파일임')
-      }
-      응답.render('detail.ejs',{result : result})
-    } catch {
-      응답.status(404).send('없는파일임')
-    }
-  })
+  // })
+
   // edit 수정페이지 접속시
   app.get('/edit/:id', async (요청,응답) => {
     try {
@@ -173,19 +159,7 @@ app.use(express.urlencoded({extended:true}))
       응답.status(500).send('서버에러')
     }
   })
-  // edit 글 수정 API
-  app.put('/edit' , async (요청,응답) => {
-    
-    let data = { title : 요청.body.title , content : 요청.body.content}
-    // db.collection('post').updateOne({},{$set : {}}) // 수정하는법 updateOne({바꿀 데이터 ex) id : xx} ,{ $set : { title : 이걸로 }}) 아이디가 이거인것의 title을 이걸로 덮어씀
-    await db.collection('post').updateOne({ _id : new ObjectId(요청.body.id) },{$set : data })
-    // await db.collection('post').updateOne({_id : x} , {$inc : { like : 1}}) $set은 덮어쓰기 , inc는 뒤에 숫자를 연산해주는 기능 , $mul 곱하기 등등 여러가지있음
-    // updateOne은 한개의 도큐먼트만 수정  동시에 여러개 수정하고 싶다면 updateMany 예를들면 좋아요가 10개이상 같은 조건
-    // await db.collection('post').updateMany({ like : { $gt : 10} },{$inc : { like : 1}  }) // $gt는 값보다 큰 > 10   등등 여러가지 필터있음
-
-    // 하지만 user에게서 받아오는 id값은 html에 있으면 임의 조작이 가능한데 이럴경우는 어떻게?
-    응답.redirect('/list')
-  })
+  
   // delete 글 삭제
   app.delete('/delete', async (요청,응답) => {
     let result = await db.collection('post').deleteOne( { _id : new ObjectId(요청.query.docid)})
@@ -335,10 +309,14 @@ app.use(express.urlencoded({extended:true}))
   // 라우터 테스트 잘됨 - shop.js
   app.use('/shop',require('./routes/shop.js'))
   // Router 
+  app.use('/',require('./routes/index.js'))
   app.use('/list',require('./routes/list.js'))
   app.use('/login',require('./routes/login.js'))
   app.use('/overlapping',require('./routes/overlapping.js'))
-
+  app.use('/write',require('./routes/write.js'))
+  app.use('/edit',require('./routes/edit.js'))
+  app.use('/detail',require('./routes/detail.js'))
+  app.use('/add',require('./routes/add.js'))
 // 해봐야할거 
 // 1. pagenation - 대충됨... 
 // 2. 정렬기능 - 생각해보니 정렬이 필요할까? 

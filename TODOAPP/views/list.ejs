@@ -16,17 +16,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Document</title>
-  <link rel="stylesheet" href="/css/main.css">
+  <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
-<!-- currentPage 에서 locals. 하면 없는데이터도 허용해준다고함 -->
-<%- include('nav.ejs') %>
-<%= "현재페이지 : " + currentPage %> <br>
-<%= "총 글수 : " + totalRecord %> <br>
-<%= "첫페이지 " + firstPage %> <br>
-<%= "마지막페이지 " + lastPage %> <br>
-<%= "totalPage : " + totalPage %>
-<%= "num : " + num %>
+
 
 <!-- sort({ _id : -1}) -1은 내림차순 1은 오름차순  정렬못해먹겠다.-->
   <!-- <form action="/list" method="get" onchange="this.form.submit()">
@@ -37,67 +30,100 @@
       <option value="goodsoon">추천순</option>
     </select>
   </form> -->
-  <ul>
-    <% for(let i = 0; i < pageSize; i++){ %>
-      <% if(num < 1) break %>
-      <li>
-        <span><%= num %></span>
-        <h4><a href="/detail/<%= data[i]._id %>"><%= data[i].title %></a></h4>
-        <p><%= data[i].content %></p>
-        <a href="/edit/<%= data[i]._id %>">수정하기</a>
-        <button data-id="<%= data[i]._id%>" class="del">삭제하기</button>
-      </li>
-      <% num = num -1 %>
-    <% } %>
-  </ul>
-  
-  <div class="pagenation">
-    <!-- 왼쪽버튼 -->
-    <!-- 맨왼쪽에서 누를때 -->
-    <% if(firstPage-1 > 1){ %>
-      <a href="/list/<%= firstPage - 1 %>">&laquo;</a>
-    <% } else {%>
-      <a href="javascript:alert('처음페이지 입니다.')">&laquo;</a>
-    <% }%>
-
-    <%for(let i = firstPage; i <= lastPage; i++){ %>
-      <!-- // 총페이지 수를 넘어서면 멈춤 -->
-      <% if(i > totalPage) break %> 
-        <a href="/list/<%= i%>"><%= i%></a>
-    <%} %>
-
-    <!-- 오른쪽버튼 -->
-    <% if(lastPage < totalPage){ %>
-      <a href="/list/<%= lastPage + 1%>">&raquo;</a>
-    <% } else {%>
-      <a href="javascript:alert('마지막페이지 입니다.')">&raquo;</a>
-    <% }%>
-  </div>
-
-  
-  <!-- 검색 -->
-  <div class="form-set search">
-    <form action="/search" method="post" style="display: flex;">
-      <div class="inp-set slct-type" style="display: flex;">
-        <div class="slct">
-          <select name="search_slct" id="">
-            <option value="전체">전체</option>
-            <option value="글제목">글제목</option>
-            <option value="글내용">글내용</option>
-          </select>
+  <%- include('nav.ejs') %>
+  <main>
+    <div class="container">
+      <div class="list">
+        <div class="list-header">
+          <ul>
+            <li>번호</li>
+            <li>제목</li>
+            <li>추천</li>
+            <li>분류</li>
+          </ul>
         </div>
-        <input name="search_inp" type="text">
+
+
+        <ul class="list-body">
+          <% for(let i = 0; i < pageSize; i++){ %>
+            <% if(num < 1) break %>
+            <li>
+              <a href="/detail/<%= data[i]._id %>">
+                <div class="num"><%= num %></div>
+                <div class="title"><%= data[i].title %></div>
+                <div class="good">추천</div>
+                <div class="topic">주제</div>
+                <!-- <a href="/edit/<%= data[i]._id %>">수정하기</a>
+                <button data-id="<%= data[i]._id%>" class="del">삭제하기</button> -->
+            </a>
+          </li>
+            <% num = num -1 %>
+          <% } %>
+        </ul>
+
+        <div class="pagenation mt-20">
+          <!-- 왼쪽버튼 -->
+          <!-- 맨왼쪽에서 누를때 -->
+          <% if(firstPage-1 > 1){ %>
+            <a href="/list/<%= firstPage - 1 %>">&laquo;</a>
+          <% } else {%>
+            <a href="javascript:alert('처음페이지 입니다.')">&laquo;</a>
+          <% }%>
+      
+          <%for(let i = firstPage; i <= lastPage; i++){ %>
+            <!-- // 총페이지 수를 넘어서면 멈춤 -->
+            <% if(i > totalPage) break %> 
+              <a href="/list/<%= i%>"><%= i%></a>
+          <%} %>
+      
+          <!-- 오른쪽버튼 -->
+          <% if(lastPage < totalPage){ %>
+            <a href="/list/<%= lastPage + 1%>">&raquo;</a>
+          <% } else {%>
+            <a href="javascript:alert('마지막페이지 입니다.')">&raquo;</a>
+          <% }%>
+        </div>
+      
+        
+        <!-- 검색 -->
+        <div class="form-set search mt-20">
+          <form action="/search" method="post" style="display: flex;">
+            <div class="inp-set slct-type" style="display: flex;">
+              <div class="slct">
+                <select name="search_slct" id="">
+                  <option value="전체">전체</option>
+                  <option value="글제목">글제목</option>
+                  <option value="글내용">글내용</option>
+                </select>
+              </div>
+              <input name="search_inp" type="text">
+            </div>
+            <button type="submit" onclick="
+            if(document.querySelector('.search input[type=text]').value == ''){
+              alert('검색내용입력')
+              event.preventDefault()
+              } else {
+                document.querySelector('.search form').submit()
+              }"
+              >검색</button>
+          </form>
+        </div>
       </div>
-      <button type="submit" onclick="
-      if(document.querySelector('.search input[type=text]').value == ''){
-        alert('검색내용입력')
-        event.preventDefault()
-        } else {
-          document.querySelector('.search form').submit()
-        }"
-        >검색</button>
-    </form>
-  </div>
+
+      
+
+
+    </div>
+
+    <!-- currentPage 에서 locals. 하면 없는데이터도 허용해준다고함 -->
+
+<%= "현재페이지 : " + currentPage %> <br>
+<%= "총 글수 : " + totalRecord %> <br>
+<%= "첫페이지 " + firstPage %> <br>
+<%= "마지막페이지 " + lastPage %> <br>
+<%= "totalPage : " + totalPage %>
+<%= "num : " + num %>
+  </main>
   <script>
     // ajax 사용
     document.querySelectorAll('.del').forEach((ele,idx) => {

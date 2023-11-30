@@ -20,7 +20,7 @@ router.get('/:id', async (요청,응답) => {
     let limit = 5;
     let result = await db.collection('post').find().skip(skip).limit(limit).toArray();
     let data = await db.collection('post').find().toArray()
-    console.log(요청.body,요청.params)
+    // console.log(요청.body,요청.params)
     응답.render('list.ejs' , {글목록 : result , params : 요청.params.id, 글수 : data.length, 현재페이지 : nowPage})
   } catch {
     응답.status(500).send('오류')

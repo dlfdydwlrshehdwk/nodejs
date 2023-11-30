@@ -1,0 +1,14 @@
+{
+	"version": 3,
+	"file": "style.css",
+	"sources": [
+		"../scss/style.scss",
+		"../scss/layout.scss"
+	],
+	"sourcesContent": [
+		"@charset \"utf-8\";\r\n@import 'layout'; ",
+		"/* 리셋 부분 */\r\nbody,body * {\r\n  margin: 0;\r\n  padding: 0;\r\n}\r\nli {\r\n  list-style: none;\r\n}\r\na{\r\n  text-decoration: none;\r\n}\r\n/* 헤더 */\r\n.header {  \r\n  border-bottom: 1px solid #000;\r\n  padding: 0 40px;\r\n}\r\n.header-wrap {\r\n  height: 80px; \r\n  display: flex;\r\n  max-width: 1440px;\r\n  margin: 0 auto;\r\n}\r\n.header-left {\r\n  width: 50%;\r\n  line-height: 80px;\r\n}\r\n.header-right {\r\n  width: 50%;\r\n  line-height: 80px;\r\n}\r\n.header-right > ul {\r\n  display: flex;\r\n  align-items: center;\r\n}\r\n.header-right a {\r\n  width: 100px;\r\n  text-align: center;\r\n  display: inline-block;\r\n}\r\n/* 컨테이너 */\r\n.container {\r\n  max-width: 1440px;\r\n  margin: 0 auto;\r\n}\r\n\r\n\r\n\r\n\r\n/* 로그인 */\r\n\r\n\r\n\r\nh4 {\r\n  color :red;\r\n}\r\n.pagenation a + a{\r\n  margin-left: 10px;\r\n}\r\n\r\n\r\n\r\n"
+	],
+	"names": [],
+	"mappings": ";ACAA,eAAe;AACf,AAAA,IAAI,EAAC,IAAI,CAAC,CAAC,CAAC;EACV,MAAM,EAAE,CAAC;EACT,OAAO,EAAE,CAAC;CACX;;AACD,AAAA,EAAE,CAAC;EACD,UAAU,EAAE,IAAI;CACjB;;AACD,AAAA,CAAC,CAAA;EACC,eAAe,EAAE,IAAI;CACtB;;AACD,UAAU;AACV,AAAA,OAAO,CAAC;EACN,aAAa,EAAE,cAAc;EAC7B,OAAO,EAAE,MAAM;CAChB;;AACD,AAAA,YAAY,CAAC;EACX,MAAM,EAAE,IAAI;EACZ,OAAO,EAAE,IAAI;EACb,SAAS,EAAE,MAAM;EACjB,MAAM,EAAE,MAAM;CACf;;AACD,AAAA,YAAY,CAAC;EACX,KAAK,EAAE,GAAG;EACV,WAAW,EAAE,IAAI;CAClB;;AACD,AAAA,aAAa,CAAC;EACZ,KAAK,EAAE,GAAG;EACV,WAAW,EAAE,IAAI;CAClB;;AACD,AAAA,aAAa,GAAG,EAAE,CAAC;EACjB,OAAO,EAAE,IAAI;EACb,WAAW,EAAE,MAAM;CACpB;;AACD,AAAA,aAAa,CAAC,CAAC,CAAC;EACd,KAAK,EAAE,KAAK;EACZ,UAAU,EAAE,MAAM;EAClB,OAAO,EAAE,YAAY;CACtB;;AACD,cAAc;AACd,AAAA,UAAU,CAAC;EACT,SAAS,EAAE,MAAM;EACjB,MAAM,EAAE,MAAM;CACf;;AAKD,YAAY;AAIZ,AAAA,EAAE,CAAC;EACD,KAAK,EAAE,GAAG;CACX;;AACD,AAAA,WAAW,CAAC,CAAC,GAAG,CAAC,CAAA;EACf,WAAW,EAAE,IAAI;CAClB"
+}
