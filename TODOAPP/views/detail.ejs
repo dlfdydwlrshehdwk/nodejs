@@ -1,3 +1,6 @@
+<%
+  let userId = locals.login == undefined ? null : locals.login._id
+%>
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -7,6 +10,9 @@
   <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
+  <div><%= userId %></div>
+  <span>접속한유저아이디 <%= JSON.stringify(login) %></span><br/>
+  <span>받아온값 <%= JSON.stringify(result) %></span>
   <%- include('nav.ejs') %>
   <!-- <%= JSON.stringify(result) %> -->
   <div>
@@ -16,6 +22,7 @@
     <img src="<%= result.image %>" alt="">
     <% } %>
   </div>
+  
 </body>
 </html>
 <!-- 추가해야하는 기능

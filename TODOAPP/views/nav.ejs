@@ -1,6 +1,7 @@
 <!-- 로그인인지 체크 0비로그인 1 로그인 -->
 <% 
-  let user = locals.login == undefined ? 0 : 1
+  let user = locals.login == undefined ? 0 : 1;
+  let userId = locals.login == undefined ? null : locals.login._id
 %>
 <!DOCTYPE html>
 <html lang="ko">
@@ -13,7 +14,7 @@
 <body>
   
   <span><%= JSON.stringify(user) %></span>
-
+  <span><%= JSON.stringify(locals.login) %></span>
   </span>
   <header class="header">
     <div class="header-wrap">

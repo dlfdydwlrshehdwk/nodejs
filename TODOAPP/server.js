@@ -16,7 +16,7 @@ app.use(session({
   secret: '암호화에 쓸 비번',
   resave : false, // 유저가 서버로 요청할때마다 세션 갱신할건지 default : false
   saveUninitialized : false, // 로그인 안해도 세션 만들것인지 default : false
-  cookie : { maxAge : 60 * 60 * 1000},
+  cookie : { maxAge : 60 * 60 * 1000}, // 쿠키유지시간
   store : MongoStore.create({
     mongoUrl : process.env.DB_URL,
     dbName : 'todoapp'
@@ -26,28 +26,28 @@ app.use(passport.session())
 // passport 라이브러리 셋팅 e// 
 
 // multer 사용하겠다는 소리
-const { S3Client } = require('@aws-sdk/client-s3')
-const multer = require('multer')
-const multerS3 = require('multer-s3')
-const s3 = new S3Client({
-  region : 'ap-northeast-2',
-  credentials : {
-      accessKeyId : process.env.S3_KEY,
-      secretAccessKey : process.env.S3_SECRET
-  }
-})
+// const { S3Client } = require('@aws-sdk/client-s3')
+// const multer = require('multer')
+// const multerS3 = require('multer-s3')
+// const s3 = new S3Client({
+//   region : 'ap-northeast-2',
+//   credentials : {
+//       accessKeyId : process.env.S3_KEY,
+//       secretAccessKey : process.env.S3_SECRET
+//   }
+// })
 
-const upload = multer({
-  storage: multerS3({
-    s3: s3,
-    bucket: 'dotlqksk',
-    key: function (요청, file, cb) {
-      cb(null, Date.now().toString()) //업로드시 파일명 변경가능
-      // 겹치는걸 피하기위해 날짜같은걸 넣는다고함
-      // 파일명같은걸 넣고싶다면 요청.file 하면 나온다고함.
-    }
-  })
-})
+// const upload = multer({
+//   storage: multerS3({
+//     s3: s3,
+//     bucket: 'dotlqksk',
+//     key: function (요청, file, cb) {
+//       cb(null, Date.now().toString()) //업로드시 파일명 변경가능
+//       // 겹치는걸 피하기위해 날짜같은걸 넣는다고함
+//       // 파일명같은걸 넣고싶다면 요청.file 하면 나온다고함.
+//     }
+//   })
+// })
 // 사진한장받아올때 upload.single('img1') , 파일명은 요청.file안에있음
 // 사진여러장받아올때 upload.array('인풋name' , 2(최대장수) ) , 파일명은 요청.files 
 // 그럼 location 안에 있는 주소가 img src이다. 요청.file.location
