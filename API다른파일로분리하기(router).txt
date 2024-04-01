@@ -1,0 +1,93 @@
+개발을하다보면
+server.js에 수백개가 넘는 API가 생성될 수 있는데
+이렇게 되면 수정이나 새로 작성이 피곤해진다.
+그렇기에 API들을 분리하는 법을 알면 좋다.
+
+API 를 다른 파일로 빼고 싶으면
+server.js 파일과 동일한경로에 폴더생성 routes (이름은 아무렇게)
+
+공통되는이름.js 로 파일생성
+파일상단에 // routes > 어쩌구.js
+const router = require('express').Router()
+
+예를들어 app.get() 되어있던 친구들 app => router 로 변경
+
+예시 ) routes > shop.js
+app.get('/shop/shirts',(요청,응답)=>{
+  응답.send('셔츠페이지')
+})
+==> 
+router.get('/shop/shirts',(요청,응답)=>{
+  응답.send('셔츠페이지')
+})
+
+파일 하단에 // routes > 어쩌구.js
+module.exports = router
+
+어쩌구.js를 routes안에 만들었으면
+
+server.js로 require해야함
+
+// server.js 
+app.use('/' , require('./routes/어쩌구.js'))
+미들웨어식으로 작성하라고함
+
+만약 분류가 하나 이루어진다면 공통된 부분 축약가능 
+- 장점 : 무슨 api인지 이름만보고 대충 구분가능
+app.use('/shop' , require('./routes/shop.js'))
+
+예시 ) routes > shop.js
+router.get('/shirts',(요청,응답)=>{
+  응답.send('셔츠페이지')
+})
+
+server.js
+app.use('/shop',require('./routes/shop.js'))
+
+! require 말고 import문법도 가능하다고함
+but 바꾸고싶다면 전부 바꿔야 한다고함
+
+
+다른파일에서 db변수 쓰기
+api들을 분리하다보면 db에서 데이터 주고받아야되는데 
+api마다 db에 연결하면 성능적문제가 생기지 않을까? 
+그렇기에 따로 파일을 만들어 관리하고 가져다 쓰는 방식을 사용한다. 
+
+db연결코드를 분리한다.
+// database.js
+const { MongoClient } = require("mongodb")
+// 밑에 2줄만가져오고 위에 이건 몽고클라이언트에 ctrl space해서 가져옴 
+const url = process.env.DB_URL
+let connectDB = new MongoClient(url).connect()
+// 밖에서 임포트 할수있게 해줌
+module.exports = connectDB
+
+// server.js 
+  const { MongoClient, ObjectId } = require('mongodb')
+  let connectDB = require('./database')
+  let db;
+  connectDB.then((client)=>{
+    console.log('db연경성공')
+    db = client.db('todoapp')
+    // 8080서버를 엶
+    app.listen(process.env.PORT, () => {
+      console.log('8080')
+    })
+  })
+  .catch((err)=>{
+    console.log(err)
+  })
+
+
+  요약
+  라우터 폴더만들고 어쩌구.js안에 만들어서
+  셋팅용으로 router라는 변수를 만들고 const router = require('express').Router()
+
+  app.어쩌구 들 router.어쩌구로 바꾸고싶다면
+
+  마지막에 module.exports = router or 변수명 
+
+  server.js 에선
+  require('파일경로')
+  서버연결할거면
+  app.use('/어쩌구',require('파일경로'))

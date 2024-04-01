@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="kr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <%- include('nav.ejs') %>
+
+  <form action="/edit?_method=PUT" method="POST">
+    <h3>글수정</h3>
+    <input style="display: none;" name="id" value="<%= result._id %>">
+    <input name="title" type="text" value="<%= result.title %>">
+    <input name="content" type="text" value="<%= result.content %>">
+    <button type="submit">수정</button>
+  </form>
+</body>
+</html>

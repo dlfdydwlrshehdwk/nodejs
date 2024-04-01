@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="kr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <%- include('nav.ejs') %>
+  <main>
+    <div class="container">
+      <!-- 서버로 이미지를 올리기위해 enctype 설정 -->
+      <form class="form-set" action="/add" method="POST" enctype="multipart/form-data">
+        <h3>글작성</h3>
+        <div class="input-set mt-20">
+          <h3>제목</h3>
+          <input class="w-100 mt-10" name="title" type="text" placeholder="제목을 입력해주세요"><br>
+        </div>
+        <div class="tarea-set mt-20">
+          <h3>내용</h3>
+          <textarea class="w-100 mt-10 tarea-content" name="content" type="text" placeholder="내용을 입력해주세요"></textarea>
+        </div>
+        <div class="box file mt-20">
+          <h3>첨부파일</h3>
+          <div class="form-set mt-10">
+            <div class="file-set">
+              <div class="filebox">
+                <input class="upload-name" type="text" readonly placeholder="선택된 파일 없음">
+                <!-- img파일을 가져가는걸 권장하기위한 accept -->
+                <!-- 이미지를 여러장 넣고싶다면 인풋에 multiple 속성 추가
+                  + server.js 에 upload.array('인풋name명', 사진최대장수(숫자))
+                -->
+                <input name="img1" type="file" id="ex_file" class="upload-hidden" accept="image/*">
+                <label for="ex_file">파일찾기</label>
+              </div>
+            </div>
+            <div class="cmt">이미지 형식, 최대 1장</div>
+          </div>
+        </div>
+        <div>
+          <div class="btn-set rgt">
+            <button class="btn put" type="submit">작성</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </main>
+</body>
+</html>

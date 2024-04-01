@@ -1,0 +1,35 @@
+html 템플릿 엔진 중 쉽다는 ejs 
+
+npm install ejs
+
+server.js 에서
+app.set('view engine','ejs')
+
+html파일을 데이터 넣고 싶다면 
+.html 이 아닌 .ejs 파일로 생성 + ejs 파일은 views 폴더에 넣는게 국룰
+
+작성법은 html과 동일
+기본html파일과의 차이는 ejs파일은 서버데이터를 집어넣을수 있다는점
++ js를 아무데서나 사용가능 단 <% %> 를 js가 있는 줄마다 사용해야함
+
+server.js 에서 파일을 보내는법
+응답.render('파일명.ejs')
+sendFile 이 아닌 render를 사용 + 기본 파일위치는 views폴더이다.
+
+서버데이터를 ejs파일에 넣으려면
+1. ejs 파일로 데이터를 전송 ex) 응답.render('list.ejs' , {글목록 : result})
+2. ejs 파일 안에서 <%= 데이터이름 %>
+3. 하지만 객체형이라 경로가애매하면 데이터가 깨져보일것이라 그럴땐 <%= JSON.stringify(데이터이름) %> 이렇게 해준다. + 물론 데이터경로가 맞다면 JSON안해도됨 경로가 애매할경우만 깨짐
+
+ejs에서는 inclued() 써서 다른 ejs파일을 컴포넌트처럼 활용가능
+ex) <%- include('파일명.ejs') %> 이렇게 쓸때 데이터를 보낼수도 있음  ex) <%- include('파일명.ejs', { age : 20}) %> 
+
+ejs 문법은 자바스크립트 구역 안에서 사용이 가능하며
+문자 '' 안에 담아서 ejs문법으로 사용해야함.
+
+
+link 태그로 css 넣을때 주의할점 
+server.js 에
+app.use(express.static(__dirname + '/assets'))
+이런식으로 경로를 지정해주어야함
+ejs파일안에서는 /assets 다음에 들어가야할 경로를 작성하면됨 

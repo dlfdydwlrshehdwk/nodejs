@@ -1,0 +1,49 @@
+몽고디비 사이트 접속
+
+가입후 이메일인증
+
+잘 채워주고
+
+무료 선택 + 서울
+
+5. 좌측 Database Access 메뉴에서 DB 접속용 아이디/비번을 생성합니다.
+
+데이터베이스 접속할 수 있는 아이디/비번을 새로 만들어주는겁니다.
+
+왜냐면 하나의 데이터베이스를 여러사람이 사용할 수도 있으니까요.  
+
+아주 안전해보이는 admin/qwer1234 이런 아이디 비번은 어떨까요 아무튼 만들고 잘 기억해두십시오
+
+주의점은 built-in-role 에서  역할을 atlas admin으로 설정합시다. 
+
+그래야 그 아이디로 nodejs에서 DB 접속시 온갖 것들을 다 사용가능 
+
+6. 좌측 Network Access 메뉴에서 IP를 추가합니다.
+
+데이터베이스 접속할 수 있는 IP를 미리 정의해놓는 일종의 보안장치입니다.
+
+스타벅스에서 코딩하실게 분명하니 Allow access from anywhere을 누르시거나 0.0.0.0/0 을 추가합니다. 
+
+이렇게 되면 아이디와 ip설정을 마쳤고
+
+database 에 콜렉션에 들어가면된다.
+
+몽고디비 인스톨 (버전5로받아서 @5)
+npm install mongodb@5
+
+몽고디비 라이브러리 셋팅
+간단한설명 - 호스팅받은 몽고디비에 접속하고 접속결과를 db라는 변수에 저장한것
+
+const { MongoClient } = require('mongodb')
+
+let db
+const url = 'mongodb사이트에 있던 님들의 DB 접속 URL'  - 데이터베이스 - 커넥트 - 드라이브 - Add your connection string into your application code (닉네임과 패스워도도 기입하는거 잘기입하기)
+new MongoClient(url).connect().then((client)=>{
+  console.log('DB연결성공')
+  db = client.db('db명')
+}).catch((err)=>{
+  console.log(err)
+})
+
+// db에 데이터 저장하기
+db.collection('post').insertOne({이름 : 값})

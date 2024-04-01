@@ -1,0 +1,78 @@
+passport 라이브러리 - 로그인 기능을 쉽게 사용할 수 있게 해줌 OAuth, JWt, session 다 쉽게 가능
+
+인스톨 코드
+npm install express-session passport passport-local  - 3가지를 깔아줌
+passport - 회원인증을 도와주는 메인 라이브러리
+passport-local - 아이디/비번 방식으로 회원인증 하고 싶을 때
+express-session - 세션만드는 것을 도와주는 라이브러리 
+
+셋팅
+
+const session = require('express-session')
+const passport = require('passport')
+const LocalStrategy = require('passport-local')
+
+app.use(passport.initialize())
+app.use(session({
+  secret: '암호화에 쓸 비번',
+  resave : false, // 유저가 서버로 요청할때마다 세션 갱신할건지 default : false
+  saveUninitialized : false // 로그인 안해도 세션 만들것인지 default : false
+}))
+app.use(passport.session()) 
+
+
+사용법
+
+new Localstrategy 어쩌구가 아이디 / 비번이 db와 일치한지 검증하는 로직 짜는 공간
+실행하는방법은 API안에서 passport.authenticate('local')() 이런코드 작성하면 된다고 함 + 이 코드 하단에 API들을 만들어야 그 API들은 로그인관련 기능들이 잘 작동한다고 함
+passport.use(new LocalStrategy(async (입력한아이디, 입력한비번, cb) => {
+  let result = await db.collection('user').findOne({ username : 입력한아이디}) // 디비에 유저네임 있는지 확인
+  if (!result) { // 없으면...
+    return cb(null, false, { message: '아이디 DB에 없음' })
+  }
+  if (result.password == 입력한비번) { // 아이디있으면 비번이랑 비교
+    return cb(null, result)
+  } else { // 일치 하지 않으면
+    return cb(null, false, { message: '비번불일치' });
+  }
+}))
+
+// 세션만들어주는 코드 - 유저가 로그인에 성공할 때 마다 자동으로 세션을 만들어줌
+passport.serializeUser((user, done) => {
+  process.nextTick(() => { // 노드환경에서 특정코드를 비동기적으로 처리하고 싶을때 쓰는 문법
+    done(null, { id: user._id, username: user.username }) // 두번째 파라미터는 세션 document 에 기록됨, 유효기간 이런건 알아서 기록해줌
+  })
+})
+
+// 세션 유효기간 설정가능 - 디폴트는 2주
+app.use(session({ 
+  secret : '어쩌구',
+  resave : false,
+  saveUninitialized : false,
+  cookie : { maxAge : 60 * 60 * 1000 } // 여기를바꾸면됨 ms단위
+}) 
+
+// 쿠키 비교분석해주는 코드 - 유저가 서버로 무언가 요청할때마다 쿠키가 서버로 자동으로 전송됨, 서버는 쿠키를 까서 확인해보고 세션데이터가 있는지 조회해서
+유저가 로그인 되어있는지 여부를 판단할 수 있음 이걸 이 코드가 해준다.
+passport.deserializeUser((user, done) => {
+  process.nextTick(() => {
+    return done(null, user)
+  })
+})
+serializeUser 밑에 작성해준다. deserializeUser 밑에 API에서 요청.user쓰면 로그인된 유저 정보를 출력가능
++ 세션데이터가 오래되었던가 하면 최신유저데이터랑은 다를 수 있기에 
+세션에 적힌 유저정보를가져와서 , 최신 회원 정보를 db에서 가져오고 , 그걸 요청.user에 집어넣는 식으로 코드를 짜는게 좋다. 
+passport.deserializeUser((user, done) => {
+  let result = await db.collection('user').findOne({_id : new ObjectId(user.id) })
+  delete result.password
+  process.nextTick(() => {
+    return done(null, result)
+  })
+})
+
+1. 로그인 성공하면 세션 document 만들기 쿠키를 유저에게 보내주기
+-> passport.serializeUser() 쓰면 자동으로해줌 // 요청login() 하면 이게 실행됨
+2. 유저가 쿠키 제추리 확인해보기
+-> passport.deserializeUser() 쓰면 자동으로 해줌
+3. 현재로그인된 유저정보 출력은 요청.user 
++ deserializeUser 밑에 있는 API부터 된다는거같음 - 그건아닌데 그럴수도있다는듯?

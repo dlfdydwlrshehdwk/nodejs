@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <%- include('nav.ejs') %>
+
+  <main>
+    <div class="container">
+      <div class="box register">
+        <form action="/register" method="post" class="form-set">
+          <div class="input-set">
+            <input name="username" type="text" placeholder="아이디를 입력해주세요">
+            <button class="overlapping" type="button">중복확인</button><br>
+          </div>
+          <div class="input-set">
+            <input name="password" type="password" placeholder="비밀번호를 입력해주세요"><br>
+          </div>
+          <div class="input-set">
+            <input name="password_chk" type="password" placeholder="비밀번호 확인">
+            <span class="pwd_chk_txt"></span>
+          </div>
+          <div class="btn-set mt-20">
+            <button class="w-100" type="submit">가입하기</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </main>
+
+
+  <script>
+    let overlapping_btn = document.querySelector('.overlapping')
+    overlapping_btn.addEventListener('click',function(){
+      // ajax로 서버통신하기
+      // name은 무조건 다중선택이라 순번을 적어야된다고함
+      let username = document.getElementsByName('username')[0].value 
+      let password = document.getElementsByName('password')[0].value
+      let password_chk = document.getElementsByName('password_chk')[0].value
+      let data = {
+        username : username,
+        password : password,
+        password_chk : password_chk
+      }
+      fetch('/overlapping',{
+        method : 'post',
+        headers : {
+          'Content-Type' : 'application/json'
+        },
+        body : JSON.stringify(data)
+      })
+      .then((r)=>r.text())
+      .then((r)=>{
+        // 콜백
+        alert(r)
+      })
+    })
+  
+
+    // 비밀번호 비교 할거임
+    let pwd; 
+    let pwd_chk;
+    let pwdArr = document.querySelectorAll('input[type=password]')
+    pwdArr.forEach((ele,idx)=>{
+      ele.addEventListener('input',function(){
+        pwd = document.querySelector('input[name=password]').value
+        pwd_chk = document.querySelector('input[name=password_chk]').value 
+        // 두개의 pwd비교해서 조건분기
+        // 조건은 대충넣었음 글자수랑 빈칸조건만 했음
+        // 자세한조건은 정규식활용
+        // 자스에서 처리했지만 서버에서도 처리해야함
+        if(pwd.length > 3 && pwd_chk != ''){
+          if(pwd == pwd_chk){
+            console.log('fa')
+            document.querySelector('.pwd_chk_txt').innerText = '비밀번호가 일치합니다.'
+            document.querySelector('.pwd_chk_txt').style.color = 'green'
+          } else {
+            document.querySelector('.pwd_chk_txt').innerText = '비밀번호가 맞지 않습니다.'
+            document.querySelector('.pwd_chk_txt').style.color = 'red'
+          }
+        } else {
+          document.querySelector('.pwd_chk_txt').innerText = ''
+          document.querySelector('.pwd_chk_txt').style.color = 'black'
+        }
+      })
+    })
+  </script>
+</body>
+</html>

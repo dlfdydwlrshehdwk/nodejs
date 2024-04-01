@@ -1,0 +1,74 @@
+// 서버 - 접속
+app.get('/',(요청,응답) => { // 페이지 접속시 / 은 메인 , /abcd - abcd로 접속시
+    // 응답.send('메인입니다.') // 단순 글씨만 보낼떄
+    // 응답.sendFile(__dirname + '/파일명.html') // html파일을 보낼때
+  })
+
+// 데이터 - 삽입 //
+
+db.collection('post').insertOne({ 이름 : 값 }) // db에 데이터 단일로 삽입하는법
+
+// 데이터 - 가져오기
+let result = await db.collection('post').find().toArray() // db에서 모든데이터 가져오기 await이 필수라 위에 함수에 async또한 필수
+db.collection('post').find().toArray().then(()=>{}) // awiat 쓰기 싫다면 then으로 활용가능
+
+let result = await db.collection('post').find().limit(5).toArray() db - post 데이터 중에서 5개만 가져오기 limit
+
+result = await db.collection('post').find().skip(5).limit(5).toArray() // 앞에 5개는 제외하고 5개를뽑아오는 코드 - pagenation 할때 유용할듯함. .skip() 은 성능이 안좋다 너무 많은 갯수는 ㄴㄴ
+
+result = await db.collection('post').find({content : { $regex : 요청.body.search_inp}}).toArray() // 검색기능 content가 검색한 내용을 포함하고 있다면 가져가기
+
+result = await db.collection('post').find({
+          // or 쿼리를 사용해서 여러 곳에서 데이터 가져오기
+          $or : [
+            // $regex 를 이용해서 단어의 일부분만 입력해도 가져오기
+            {title : { $regex : 요청.body.search_inp}},
+            {content : { $regex : 요청.body.search_inp}}
+          ]
+        }).toArray()
+
+// 스킵을 안쓰고 방금게시물에서 다음페이지 바로가기 같은 기능은...
+/* app.get('/list/:id', async (요청,응답) => {
+  let result = await db.collection('post').find({_id : {$gt : new ObjectId(요청.params.id)}}).limit(5).toArray()
+  응답.render('검색페이지.ejs',{ result : result})
+}) */
+// 이렇게 가능할듯하다. $gt는 _id가 방금본마지막게시물보다 큰거를 다 찾아옴  <- 여기서 5개제한을 걸어가져오는것 
+// - 왜? - skip은 성능이 안좋으니까 다른방법으로 이게있단거(장점 :  빠름 - 아이디로 찾는게 되게빠르다고함, 단점 : 페이지이동은 불가능 - 이전, 다음 이런 화살표기능만 가능) 
+
+console.log(요청.body) // 유저가 보낸 데이터
+
+// ajax
+a,form과 다르게 새로고침없이 서버와의 통신을 할 수 있게 해줌
+ajax요청시 redirect나 render는 사용하면안됨 -> 페이지이동이라 새로고침이됨( ajax는 새로고침 없이 사용하기 위함이므로 )
+fetch('/url', {
+        // 원하는 메소드넣기
+        method : 'post', get post put delete
+        // 부가정보 기입란임 이렇게 작성해야 array,obj 데이터를 전송할 수 있음
+        headers : {
+          'Content-Type' : 'application/json'
+        },
+        // 서버로 전송할데이터 그냥넣으면 데이터가 깨지기에 JSON형태로 전송
+        body : JSON.stringify({ 이름 : 값 })
+      }
+delete에 body설정하면 전송이 안된다고도함. 주의
+
+// ajax문법 + 예외처리
+fetch('/URL')
+.then((r)=>{
+  if(r.status == 200) {
+    return r.json()
+  } else {
+    //서버가 에러코드전송시 실행할코드
+  }
+})
+.then((result)=>{ 
+  //성공시 실행할코드
+}).catch((error)=>{
+  //인터넷문제 등으로 실패시 실행할코드
+  console.log(error)
+})
+
+
+TIP
+a / form 을쓰면 get요청을 할 수 있는데 단점은 새로고침이됨
+그래서 ajax를 쓰면 새로고침이 안되면서 서버와 통신할수 있다는 장점이있음

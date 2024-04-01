@@ -1,0 +1,55 @@
+<!-- 로그인인지 체크 0비로그인 1 로그인 -->
+<% 
+  let user = locals.login == undefined ? 0 : 1;
+  let userId = locals.login == undefined ? null : locals.login._id
+%>
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  
+  <span><%= JSON.stringify(user) %></span>
+  <span><%= JSON.stringify(locals.login) %></span>
+  </span>
+  <header class="header">
+    <div class="header-wrap">
+      <div class="header-left">
+        <h1> <a href="/">LOGO</a></h1>
+      </div>
+      <div class="header-right">
+        <ul style="display: flex;">
+          <li>
+            <a href="/">홈</a>
+          </li>
+          <li>
+            <a href="/list">목록</a>
+          </li>
+          <li>
+            <a href="/write">글작성</a>
+          </li>
+          <!-- 로그인상태면 마이페이지 -->
+          <% if(user){ %>
+            <li>
+              <a href="/mypage">마이페이지</a>
+            </li>
+          <!-- 로그인상태가 아닐경우 로그인/회원가입 -->
+          <% } else { %>
+            <li>
+              <a href="/login">로그인</a>
+            </li>
+            <li>
+              <a href="/register">회원가입</a>
+            </li>
+          <% }%>
+
+        </ul>
+      </div>
+    </div>
+  </header>
+</body>
+</html>

@@ -1,0 +1,18 @@
+1. 구글에 node.js 설치 최신버전으로 
+2. 프로젝트 명 하나 생성해주고 터미널 열어서 npm init -y 하면 packge.json 생김 - 라이브러리(express) 설치해서 쓰기위한 셋팅
+
+-서버실행하는 법-
+터미널에 경로 맞추고 node server.js 
+
+-서버수정마다 서버 새로키는게 귀찮다면 nodemon 설치한다-
+npm install -g nodemon 로 인스톨
+
+nodemon server.js 로 실행
+
+nodemon 실행이 잘안될때가있다. ( 이 시스템에서 스크립트를 실행할 수 없으므로 ...)
+그럴때
+1. powershell 관리자권한으로 시작
+2. get-ExecutionPolicy로 현재 권한상태를 확인한다 - RemoteSigned 상태가 아니라면 스크립트 실행이 되지 않는다.
+3. 권한 상태를 "RemoteSigned"으로 변경한다 - Set-ExecutionPolicy RemoteSigned - Y 
+4. get-ExecutionPolicy로 권한이 잘 변경되었는지 확인한다.
+잘된다.
